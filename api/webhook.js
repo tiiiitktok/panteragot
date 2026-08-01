@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { getNotifications, setNotifications } = require("../lib/store");
 const { detectTipo, detectValor, detectExtra, checkSecret } = require("../lib/detect");
+const { sendPushToAll, buildPushPayload } = require("../lib/push");
 
 module.exports = async (req, res) => {
   if (req.method === "GET") {
@@ -32,6 +33,13 @@ module.exports = async (req, res) => {
   list.push(notif);
   if (list.length > 2000) list.splice(0, list.length - 2000);
   await setNotifications(list);
+
+  // Dispara a notificação push sem travar a resposta do webhook caso falhe
+  try {
+    await sendPushToAll(buildPushPayload(notif));
+  } catch (err) {
+    console.error("Falha ao enviar push:", err);
+  }
 
   res.status(200).json({ ok: true, classificado_como: tipo, valor_detectado: valor, gateway: "generico" });
 };

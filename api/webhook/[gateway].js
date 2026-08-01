@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { getNotifications, setNotifications, getGateways } = require("../../lib/store");
 const { detectTipo, detectValor, detectExtra, checkSecret } = require("../../lib/detect");
+const { sendPushToAll, buildPushPayload } = require("../../lib/push");
 
 module.exports = async (req, res) => {
   const slug = req.query.gateway;
@@ -37,6 +38,12 @@ module.exports = async (req, res) => {
   list.push(notif);
   if (list.length > 2000) list.splice(0, list.length - 2000);
   await setNotifications(list);
+
+  try {
+    await sendPushToAll(buildPushPayload(notif));
+  } catch (err) {
+    console.error("Falha ao enviar push:", err);
+  }
 
   res.status(200).json({ ok: true, classificado_como: tipo, valor_detectado: valor, gateway: slug });
 };

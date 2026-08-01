@@ -66,6 +66,47 @@ um arquivo local em `data/` como armazenamento — só funciona rodando
 localmente com o Vercel CLI (`npm i -g vercel` e depois `vercel dev`),
 não funciona em produção na Vercel (lá o disco é somente leitura).
 
+## Notificações no celular (iPhone e Android)
+
+O painel pode enviar uma notificação push para o celular a cada venda
+gerada ou aprovada — funciona depois de adicionar o site à tela de
+início, como um app.
+
+**Não precisa configurar nada manualmente**: as chaves necessárias
+(VAPID) são geradas automaticamente pelo próprio código na primeira vez
+que alguém acessa e ficam guardadas no mesmo banco Postgres.
+
+### Como ativar
+
+**No Android (Chrome):**
+1. Abra o site normalmente
+2. Um aviso "Ative as notificações" aparece no topo — toque em **ativar
+   notificações** e aceite a permissão do navegador
+3. Pronto — funciona mesmo sem adicionar à tela de início, mas se quiser
+   um ícone de app, use o menu do Chrome → "Adicionar à tela inicial"
+
+**No iPhone (Safari):**
+O iOS só permite notificações push para sites que foram **instalados**
+como app — não funciona direto no navegador. Passo a passo:
+1. Abra o site no Safari
+2. Toque no ícone de **Compartilhar** (o quadrado com a seta pra cima)
+3. Toque em **"Adicionar à Tela de Início"**
+4. Feche o Safari e abra o app pelo ícone que apareceu na tela de início
+   (não pelo Safari)
+5. Agora sim o aviso "Ative as notificações" aparece — toque nele e
+   aceite a permissão
+
+Isso é uma limitação da Apple, não do código — não tem como pular essa
+etapa de instalação no iPhone.
+
+### Testando
+
+Depois de ativar, o próprio botão já dispara uma notificação de teste.
+Também dá pra testar de novo a qualquer momento usando os botões
+"testar venda gerada" / "testar venda aprovada" na aba Webhooks — se as
+notificações estiverem ativadas, elas devem aparecer no celular também,
+não só no painel.
+
 ## Segurança (recomendado)
 
 Defina uma variável de ambiente `WEBHOOK_SECRET` no painel da Vercel
