@@ -1,0 +1,9 @@
+{
+  "name": "sales-radar",
+  "version": "2.2.0",
+  "description": "Painel de notificacoes de vendas via webhook, hospedado na Vercel (Postgres/Supabase), com notificacoes push no celular",
+  "dependencies": {
+    "pg": "^8.22.0",
+    "web-push": "^3.6.7"
+  }
+}
