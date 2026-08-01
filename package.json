@@ -1,8 +1,0 @@
-{
-  "name": "sales-radar",
-  "version": "2.0.0",
-  "description": "Painel de notificacoes de vendas via webhook, hospedado na Vercel",
-  "dependencies": {
-    "@vercel/kv": "^2.0.0"
-  }
-}
