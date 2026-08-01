@@ -11,6 +11,8 @@
   --green-soft: rgba(51, 196, 129, 0.14);
   --red: #e85d5d;
   --red-soft: rgba(232, 93, 93, 0.14);
+  --blue: #5b9cf6;
+  --blue-soft: rgba(91, 156, 246, 0.14);
   --mono: "IBM Plex Mono", monospace;
   --sans: "Inter", sans-serif;
 }
@@ -58,19 +60,21 @@ html, body { margin: 0; background: var(--bg); color: var(--text); font-family: 
 .period-label { font-size: 12px; color: var(--muted); margin: 12px 2px 18px; }
 
 /* ---------- stats ---------- */
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
-@media (max-width: 760px) { .stats-grid { grid-template-columns: 1fr; } }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 24px; }
+@media (max-width: 560px) { .stats-grid { grid-template-columns: 1fr; } }
 
 .stat-card { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--muted); border-radius: 10px; padding: 16px 18px; }
 .stat-card.gerada { border-top-color: var(--amber); }
 .stat-card.aprovada { border-top-color: var(--green); }
 .stat-card.cancelada { border-top-color: var(--red); }
+.stat-card.conversao { border-top-color: var(--blue); }
 
 .stat-top { display: flex; align-items: center; justify-content: space-between; }
 .stat-badge { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); }
 .stat-card.gerada .stat-badge { color: var(--amber); }
 .stat-card.aprovada .stat-badge { color: var(--green); }
 .stat-card.cancelada .stat-badge { color: var(--red); }
+.stat-card.conversao .stat-badge { color: var(--blue); }
 .stat-qtd { font-family: var(--mono); font-size: 13px; color: var(--muted); background: var(--panel-2); padding: 2px 8px; border-radius: 20px; }
 
 .stat-value { font-family: var(--mono); font-size: 26px; font-weight: 700; margin-top: 10px; }

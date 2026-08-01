@@ -117,6 +117,17 @@ async function loadDashboard() {
     return;
   }
 
+  renderStats(stats);
+
+  feed.innerHTML = "";
+  if (list.length === 0) {
+    feed.innerHTML = `<div class="empty-state">Nenhum sinal neste período.</div>`;
+  } else {
+    list.forEach((n) => renderCard(n));
+  }
+}
+
+function renderStats(stats) {
   document.getElementById("qtdGerada").textContent = stats.gerada.qtd;
   document.getElementById("valorGerada").textContent = fmt(stats.gerada.valor);
   document.getElementById("qtdAprovada").textContent = stats.aprovada.qtd;
@@ -124,11 +135,16 @@ async function loadDashboard() {
   document.getElementById("qtdCancelada").textContent = stats.cancelada.qtd;
   document.getElementById("valorCancelada").textContent = fmt(stats.cancelada.valor);
 
-  feed.innerHTML = "";
-  if (list.length === 0) {
-    feed.innerHTML = `<div class="empty-state">Nenhum sinal neste período.</div>`;
+  const taxaEl = document.getElementById("taxaConversao");
+  const detalheEl = document.getElementById("detalheConversao");
+  if (stats.gerada.qtd > 0) {
+    const pct = (stats.aprovada.qtd / stats.gerada.qtd) * 100;
+    const pctTxt = pct.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+    taxaEl.textContent = `${pctTxt}%`;
+    detalheEl.textContent = `${fmt(stats.aprovada.valor)} pagos de ${fmt(stats.gerada.valor)} gerados`;
   } else {
-    list.forEach((n) => renderCard(n));
+    taxaEl.textContent = "—";
+    detalheEl.textContent = "sem vendas geradas no período";
   }
 }
 
