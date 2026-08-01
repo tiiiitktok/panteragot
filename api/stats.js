@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
     gerada: { qtd: 0, valor: 0 },
     aprovada: { qtd: 0, valor: 0 },
     cancelada: { qtd: 0, valor: 0 },
+    reembolso: { qtd: 0, valor: 0 },
     outro: { qtd: 0, valor: 0 },
   };
 

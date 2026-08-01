@@ -88,20 +88,20 @@
         <div class="stat-value" id="valorAprovada">R$ 0,00</div>
         <div class="stat-foot">total efetivamente pago no período</div>
       </div>
-      <div class="stat-card cancelada">
-        <div class="stat-top">
-          <span class="stat-badge">CANCELADA / RECUSADA</span>
-          <span class="stat-qtd" id="qtdCancelada">0</span>
-        </div>
-        <div class="stat-value" id="valorCancelada">R$ 0,00</div>
-        <div class="stat-foot">não entra nos totais acima</div>
-      </div>
       <div class="stat-card conversao">
         <div class="stat-top">
           <span class="stat-badge">TAXA DE CONVERSÃO</span>
         </div>
         <div class="stat-value" id="taxaConversao">—</div>
         <div class="stat-foot" id="detalheConversao">venda aprovada sobre venda gerada</div>
+      </div>
+      <div class="stat-card reembolso">
+        <div class="stat-top">
+          <span class="stat-badge">REEMBOLSO</span>
+          <span class="stat-qtd" id="qtdReembolso">0</span>
+        </div>
+        <div class="stat-value" id="valorReembolso">R$ 0,00</div>
+        <div class="stat-foot">devolvido ao cliente no período</div>
       </div>
     </div>
 
@@ -124,7 +124,8 @@
       <h2>Gateways cadastrados</h2>
       <p>
         Cada gateway (Hotmart, Kiwify, Stripe, Mercado Pago, ou qualquer outro) recebe suas
-        próprias duas URLs — uma para venda gerada e outra para venda aprovada. Assim você
+        próprias três URLs — uma para venda gerada, outra para venda aprovada e outra para
+        venda reembolsada. Assim você
         sempre sabe de qual plataforma cada notificação veio.
       </p>
     </div>

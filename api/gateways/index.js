@@ -7,6 +7,7 @@ function urlsFor(req, slug) {
   return {
     gerada: `${base}/api/webhook/${slug}?tipo=gerada`,
     aprovada: `${base}/api/webhook/${slug}?tipo=aprovada`,
+    reembolso: `${base}/api/webhook/${slug}?tipo=reembolso`,
   };
 }
 

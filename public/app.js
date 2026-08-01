@@ -8,8 +8,8 @@ const gatewayMsg = document.getElementById("gatewayMsg");
 const POLL_MS = 5000; // painel se atualiza sozinho a cada 5s (sem SSE, adaptado para Vercel)
 
 const fmt = (n) => (n ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const tipoTitulo = { gerada: "Venda gerada", aprovada: "Venda aprovada", cancelada: "Venda cancelada", outro: "Notificação" };
-const tipoBadge = { gerada: "VENDA GERADA", aprovada: "VENDA APROVADA", cancelada: "CANCELADA", outro: "EVENTO" };
+const tipoTitulo = { gerada: "Venda gerada", aprovada: "Venda aprovada", cancelada: "Venda cancelada", reembolso: "Venda reembolsada", outro: "Notificação" };
+const tipoBadge = { gerada: "VENDA GERADA", aprovada: "VENDA APROVADA", cancelada: "CANCELADA", reembolso: "REEMBOLSO", outro: "EVENTO" };
 
 function timeAgo(iso) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -132,8 +132,8 @@ function renderStats(stats) {
   document.getElementById("valorGerada").textContent = fmt(stats.gerada.valor);
   document.getElementById("qtdAprovada").textContent = stats.aprovada.qtd;
   document.getElementById("valorAprovada").textContent = fmt(stats.aprovada.valor);
-  document.getElementById("qtdCancelada").textContent = stats.cancelada.qtd;
-  document.getElementById("valorCancelada").textContent = fmt(stats.cancelada.valor);
+  document.getElementById("qtdReembolso").textContent = stats.reembolso.qtd;
+  document.getElementById("valorReembolso").textContent = fmt(stats.reembolso.valor);
 
   const taxaEl = document.getElementById("taxaConversao");
   const detalheEl = document.getElementById("detalheConversao");
@@ -218,9 +218,14 @@ async function loadGateways() {
         <label>Venda aprovada <span class="tag tag-aprovada">pago</span></label>
         <div class="url-row"><code>${g.urls.aprovada}</code><button class="copy-btn" data-value="${g.urls.aprovada}">copiar</button></div>
       </div>
+      <div class="url-field">
+        <label>Venda reembolsada <span class="tag tag-reembolso">reembolsado</span></label>
+        <div class="url-row"><code>${g.urls.reembolso}</code><button class="copy-btn" data-value="${g.urls.reembolso}">copiar</button></div>
+      </div>
       <div class="gateway-test-row">
         <button class="test-btn test-gerada" data-slug="${g.slug}" data-tipo="gerada">testar venda gerada</button>
         <button class="test-btn test-aprovada" data-slug="${g.slug}" data-tipo="aprovada">testar venda aprovada</button>
+        <button class="test-btn test-reembolso" data-slug="${g.slug}" data-tipo="reembolso">testar reembolso</button>
         <span class="test-result" data-result-for="${g.slug}"></span>
       </div>
     `;
