@@ -202,6 +202,11 @@ async function loadGateways() {
         <label>Venda aprovada <span class="tag tag-aprovada">pago</span></label>
         <div class="url-row"><code>${g.urls.aprovada}</code><button class="copy-btn" data-value="${g.urls.aprovada}">copiar</button></div>
       </div>
+      <div class="gateway-test-row">
+        <button class="test-btn test-gerada" data-slug="${g.slug}" data-tipo="gerada">testar venda gerada</button>
+        <button class="test-btn test-aprovada" data-slug="${g.slug}" data-tipo="aprovada">testar venda aprovada</button>
+        <span class="test-result" data-result-for="${g.slug}"></span>
+      </div>
     `;
     gatewayList.appendChild(card);
   });
@@ -218,6 +223,39 @@ async function loadGateways() {
       } catch (_) {}
     });
   });
+  gatewayList.querySelectorAll(".test-btn").forEach((btn) => {
+    btn.addEventListener("click", () => testGateway(btn.dataset.slug, btn.dataset.tipo, btn));
+  });
+}
+
+async function testGateway(slug, tipo, btn) {
+  const resultEl = gatewayList.querySelector(`.test-result[data-result-for="${slug}"]`);
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = "enviando...";
+  try {
+    const res = await fetch(`/api/webhook/${slug}?tipo=${tipo}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ valor: 97, cliente: "Teste do painel", produto: "Produto de teste" }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      resultEl.textContent = "✓ enviado — confira na aba Dashboard";
+      resultEl.className = "test-result success";
+    } else {
+      resultEl.textContent = `✗ erro: ${data.erro || res.status}`;
+      resultEl.className = "test-result error";
+    }
+  } catch (err) {
+    resultEl.textContent = "✗ não foi possível enviar (veja o console)";
+    resultEl.className = "test-result error";
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    setTimeout(() => { resultEl.textContent = ""; resultEl.className = "test-result"; }, 6000);
+  }
 }
 
 async function copyText(text, btn) {
