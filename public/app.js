@@ -320,9 +320,8 @@ function startPolling() {
 const pushStatusDot = document.getElementById("pushStatusDot");
 const pushStatusText = document.getElementById("pushStatusText");
 const pushStatusDetail = document.getElementById("pushStatusDetail");
-const pushActivateBtn = document.getElementById("pushActivateBtn");
+const pushToggleBtn = document.getElementById("pushToggleBtn");
 const pushTestBtn = document.getElementById("pushTestBtn");
-const pushDeactivateBtn = document.getElementById("pushDeactivateBtn");
 const pushMsg = document.getElementById("pushMsg");
 
 function urlBase64ToUint8Array(base64String) {
@@ -340,14 +339,8 @@ function isIos() {
 function isStandalone() {
   return window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
 }
-
-function setPushStatus(state, text, detail) {
-  pushStatusDot.className = `push-status-dot ${state}`;
-  pushStatusText.textContent = text;
-  pushStatusDetail.textContent = detail || "";
-  pushActivateBtn.style.display = "none";
-  pushTestBtn.style.display = "none";
-  pushDeactivateBtn.style.display = "none";
+function pushSupported() {
+  return "serviceWorker" in navigator && "PushManager" in window;
 }
 
 function pushMsgShow(text, type) {
@@ -357,48 +350,71 @@ function pushMsgShow(text, type) {
 }
 
 let swRegistration = null;
+let pushState = "checking"; // checking | unsupported | ios-precisa-instalar | bloqueado | desativado | ativado
+
+function renderPushUI() {
+  pushTestBtn.style.display = pushState === "ativado" ? "inline-block" : "none";
+  pushToggleBtn.disabled = false;
+
+  const map = {
+    checking: { dot: "", text: "Verificando status…", detail: "", btn: "ativar notificações" },
+    unsupported: { dot: "error", text: "Não suportado neste navegador", detail: "Tente em um navegador mais recente, como Chrome ou Safari atualizado.", btn: "ativar notificações" },
+    "ios-precisa-instalar": { dot: "warn", text: "Ainda não dá pra ativar neste navegador", detail: "No iPhone, o Safari sozinho não permite notificações. Adicione o site à Tela de Início primeiro (veja as instruções abaixo).", btn: "ativar notificações" },
+    bloqueado: { dot: "error", text: "Notificações bloqueadas", detail: "Você negou a permissão antes. Ative de novo nas configurações do site, dentro das configurações do navegador.", btn: "ativar notificações" },
+    desativado: { dot: "warn", text: "Notificações desativadas", detail: "Ative pra receber um aviso no celular a cada venda gerada ou aprovada.", btn: "ativar notificações" },
+    ativado: { dot: "ok", text: "Notificações ativadas", detail: "Você vai receber um aviso a cada venda gerada ou aprovada.", btn: "desativar notificações" },
+  };
+  const s = map[pushState] || map.checking;
+  pushStatusDot.className = `push-status-dot ${s.dot}`;
+  pushStatusText.textContent = s.text;
+  pushStatusDetail.textContent = s.detail;
+  pushToggleBtn.textContent = s.btn;
+}
 
 async function refreshPushStatus() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    if (isIos() && !isStandalone()) {
-      setPushStatus("warn", "Ainda não dá pra ativar neste navegador",
-        "No iPhone, o Safari sozinho não permite notificações. Adicione o site à Tela de Início primeiro (veja as instruções abaixo).");
-    } else {
-      setPushStatus("error", "Não suportado neste navegador",
-        "Tente em um navegador mais recente, como Chrome ou Safari atualizado.");
-    }
+  if (!pushSupported()) {
+    pushState = isIos() && !isStandalone() ? "ios-precisa-instalar" : "unsupported";
+    renderPushUI();
     return;
   }
 
   swRegistration = await navigator.serviceWorker.register("/sw.js");
 
   if (isIos() && !isStandalone()) {
-    setPushStatus("warn", "Adicione à Tela de Início primeiro",
-      "Você está no Safari normal. Siga as instruções abaixo pra instalar o app e então ativar as notificações.");
+    pushState = "ios-precisa-instalar";
+    renderPushUI();
     return;
   }
 
   if (Notification.permission === "denied") {
-    setPushStatus("error", "Notificações bloqueadas",
-      "Você negou a permissão antes. Ative de novo nas configurações do site, dentro das configurações do navegador.");
+    pushState = "bloqueado";
+    renderPushUI();
     return;
   }
 
   const existing = await swRegistration.pushManager.getSubscription();
-  if (existing) {
-    setPushStatus("ok", "Notificações ativadas", "Você vai receber um aviso a cada venda gerada ou aprovada.");
-    pushTestBtn.style.display = "inline-block";
-    pushDeactivateBtn.style.display = "inline-block";
+  pushState = existing ? "ativado" : "desativado";
+  renderPushUI();
+}
+
+async function togglePush() {
+  if (pushState === "ativado") return deactivatePush();
+
+  if (pushState === "unsupported") {
+    pushMsgShow("Este navegador não tem suporte a notificações push.", "error");
+    return;
+  }
+  if (pushState === "ios-precisa-instalar") {
+    pushMsgShow("Primeiro adicione o site à Tela de Início (veja as instruções abaixo), depois abra por lá.", "error");
+    return;
+  }
+  if (pushState === "bloqueado") {
+    pushMsgShow("As notificações estão bloqueadas nas configurações do navegador para este site. Ative por lá primeiro.", "error");
     return;
   }
 
-  setPushStatus("warn", "Notificações desativadas", "Ative pra receber um aviso no celular a cada venda gerada ou aprovada.");
-  pushActivateBtn.style.display = "inline-block";
-}
-
-async function activatePush() {
-  pushActivateBtn.disabled = true;
-  pushActivateBtn.textContent = "ativando...";
+  pushToggleBtn.disabled = true;
+  pushToggleBtn.textContent = "ativando...";
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
@@ -426,8 +442,29 @@ async function activatePush() {
     console.error(err);
     pushMsgShow("Não foi possível ativar. Tenta de novo em alguns instantes.", "error");
   } finally {
-    pushActivateBtn.disabled = false;
-    pushActivateBtn.textContent = "ativar notificações";
+    await refreshPushStatus();
+  }
+}
+
+async function deactivatePush() {
+  pushToggleBtn.disabled = true;
+  pushToggleBtn.textContent = "desativando...";
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      await apiFetch("/api/push/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: sub.endpoint }),
+      });
+      await sub.unsubscribe();
+    }
+    pushMsgShow("Notificações desativadas.", "success");
+  } catch (err) {
+    console.error(err);
+    pushMsgShow("Não foi possível desativar agora.", "error");
+  } finally {
     await refreshPushStatus();
   }
 }
@@ -451,32 +488,8 @@ async function testPush() {
   }
 }
 
-async function deactivatePush() {
-  pushDeactivateBtn.disabled = true;
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription();
-    if (sub) {
-      await apiFetch("/api/push/unsubscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint: sub.endpoint }),
-      });
-      await sub.unsubscribe();
-    }
-    pushMsgShow("Notificações desativadas.", "success");
-  } catch (err) {
-    console.error(err);
-    pushMsgShow("Não foi possível desativar agora.", "error");
-  } finally {
-    pushDeactivateBtn.disabled = false;
-    await refreshPushStatus();
-  }
-}
-
-pushActivateBtn.addEventListener("click", activatePush);
+pushToggleBtn.addEventListener("click", togglePush);
 pushTestBtn.addEventListener("click", testPush);
-pushDeactivateBtn.addEventListener("click", deactivatePush);
 
 /* ============================= INIT ============================= */
 applyRange(computeRange("hoje"));

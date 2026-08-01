@@ -1,6 +1,6 @@
 {
-  "name": "Sales Radar",
-  "short_name": "Sales Radar",
+  "name": "roipucher",
+  "short_name": "roipucher",
   "description": "Notificações de vendas geradas e aprovadas em tempo real",
   "start_url": "/",
   "scope": "/",
