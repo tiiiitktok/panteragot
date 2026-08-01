@@ -316,7 +316,170 @@ function startPolling() {
   }, POLL_MS);
 }
 
+/* ============================= NOTIFICAÇÕES NO CELULAR (PUSH) ============================= */
+const pushStatusDot = document.getElementById("pushStatusDot");
+const pushStatusText = document.getElementById("pushStatusText");
+const pushStatusDetail = document.getElementById("pushStatusDetail");
+const pushActivateBtn = document.getElementById("pushActivateBtn");
+const pushTestBtn = document.getElementById("pushTestBtn");
+const pushDeactivateBtn = document.getElementById("pushDeactivateBtn");
+const pushMsg = document.getElementById("pushMsg");
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+function isIos() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isStandalone() {
+  return window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+}
+
+function setPushStatus(state, text, detail) {
+  pushStatusDot.className = `push-status-dot ${state}`;
+  pushStatusText.textContent = text;
+  pushStatusDetail.textContent = detail || "";
+  pushActivateBtn.style.display = "none";
+  pushTestBtn.style.display = "none";
+  pushDeactivateBtn.style.display = "none";
+}
+
+function pushMsgShow(text, type) {
+  pushMsg.textContent = text;
+  pushMsg.className = `form-msg ${type}`;
+  if (type === "success") setTimeout(() => { pushMsg.textContent = ""; pushMsg.className = "form-msg"; }, 5000);
+}
+
+let swRegistration = null;
+
+async function refreshPushStatus() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (isIos() && !isStandalone()) {
+      setPushStatus("warn", "Ainda não dá pra ativar neste navegador",
+        "No iPhone, o Safari sozinho não permite notificações. Adicione o site à Tela de Início primeiro (veja as instruções abaixo).");
+    } else {
+      setPushStatus("error", "Não suportado neste navegador",
+        "Tente em um navegador mais recente, como Chrome ou Safari atualizado.");
+    }
+    return;
+  }
+
+  swRegistration = await navigator.serviceWorker.register("/sw.js");
+
+  if (isIos() && !isStandalone()) {
+    setPushStatus("warn", "Adicione à Tela de Início primeiro",
+      "Você está no Safari normal. Siga as instruções abaixo pra instalar o app e então ativar as notificações.");
+    return;
+  }
+
+  if (Notification.permission === "denied") {
+    setPushStatus("error", "Notificações bloqueadas",
+      "Você negou a permissão antes. Ative de novo nas configurações do site, dentro das configurações do navegador.");
+    return;
+  }
+
+  const existing = await swRegistration.pushManager.getSubscription();
+  if (existing) {
+    setPushStatus("ok", "Notificações ativadas", "Você vai receber um aviso a cada venda gerada ou aprovada.");
+    pushTestBtn.style.display = "inline-block";
+    pushDeactivateBtn.style.display = "inline-block";
+    return;
+  }
+
+  setPushStatus("warn", "Notificações desativadas", "Ative pra receber um aviso no celular a cada venda gerada ou aprovada.");
+  pushActivateBtn.style.display = "inline-block";
+}
+
+async function activatePush() {
+  pushActivateBtn.disabled = true;
+  pushActivateBtn.textContent = "ativando...";
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      pushMsgShow("Permissão não concedida pelo navegador.", "error");
+      await refreshPushStatus();
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+    const { publicKey } = await apiFetch("/api/push/vapid-public-key");
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
+
+    await apiFetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(subscription),
+    });
+
+    await apiFetch("/api/push/test", { method: "POST" });
+    pushMsgShow("Ativado! Uma notificação de teste foi enviada — confira seu celular.", "success");
+  } catch (err) {
+    console.error(err);
+    pushMsgShow("Não foi possível ativar. Tenta de novo em alguns instantes.", "error");
+  } finally {
+    pushActivateBtn.disabled = false;
+    pushActivateBtn.textContent = "ativar notificações";
+    await refreshPushStatus();
+  }
+}
+
+async function testPush() {
+  pushTestBtn.disabled = true;
+  pushTestBtn.textContent = "enviando...";
+  try {
+    const result = await apiFetch("/api/push/test", { method: "POST" });
+    if (result.enviados > 0) {
+      pushMsgShow("Notificação de teste enviada — confira seu celular.", "success");
+    } else {
+      pushMsgShow("O servidor não encontrou nenhuma inscrição ativa. Tente desativar e ativar de novo.", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    pushMsgShow("Não foi possível enviar o teste agora.", "error");
+  } finally {
+    pushTestBtn.disabled = false;
+    pushTestBtn.textContent = "enviar notificação de teste";
+  }
+}
+
+async function deactivatePush() {
+  pushDeactivateBtn.disabled = true;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      await apiFetch("/api/push/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: sub.endpoint }),
+      });
+      await sub.unsubscribe();
+    }
+    pushMsgShow("Notificações desativadas.", "success");
+  } catch (err) {
+    console.error(err);
+    pushMsgShow("Não foi possível desativar agora.", "error");
+  } finally {
+    pushDeactivateBtn.disabled = false;
+    await refreshPushStatus();
+  }
+}
+
+pushActivateBtn.addEventListener("click", activatePush);
+pushTestBtn.addEventListener("click", testPush);
+pushDeactivateBtn.addEventListener("click", deactivatePush);
+
 /* ============================= INIT ============================= */
 applyRange(computeRange("hoje"));
 loadGateways();
 startPolling();
+refreshPushStatus();

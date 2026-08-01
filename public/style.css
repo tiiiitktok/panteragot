@@ -177,3 +177,20 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: 
 .test-result { font-size: 11.5px; }
 .test-result.success { color: var(--green); }
 .test-result.error { color: var(--red); }
+
+/* ---------- notificações no celular ---------- */
+.push-status-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 20px 22px; margin: 18px 0 20px;
+}
+.push-status-row { display: flex; align-items: center; gap: 10px; }
+.push-status-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--muted);
+  box-shadow: 0 0 0 3px rgba(138,147,160,0.15); flex-shrink: 0;
+}
+.push-status-dot.ok { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.push-status-dot.warn { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+.push-status-dot.error { background: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.push-status-text { font-size: 15px; font-weight: 600; }
+.push-status-detail { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
+.push-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }

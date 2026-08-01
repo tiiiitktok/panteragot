@@ -4,6 +4,18 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sales Radar</title>
+
+<!-- PWA / instalação na tela de início -->
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0b0e11" />
+<link rel="icon" href="/icons/icon-192.png" />
+
+<!-- iOS: precisa dessas tags específicas pra funcionar como app instalado -->
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Sales Radar" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
@@ -23,6 +35,7 @@
     <nav class="tabs">
       <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
       <button class="tab-btn" data-tab="webhooks">Webhooks</button>
+      <button class="tab-btn" data-tab="notificacoes">Notificações</button>
     </nav>
   </header>
 
@@ -123,6 +136,50 @@
         <code id="urlAuto">carregando…</code>
         <button class="copy-btn" data-target="urlAuto">copiar</button>
       </div>
+    </details>
+
+  </section>
+
+  <!-- ===================== NOTIFICAÇÕES ===================== -->
+  <section id="tab-notificacoes" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Notificações no celular</h2>
+      <p>
+        Receba um aviso no seu celular a cada venda gerada ou aprovada, mesmo com o site
+        fechado. Funciona no Android direto pelo navegador, e no iPhone depois de adicionar
+        o site à tela de início.
+      </p>
+    </div>
+
+    <div class="push-status-card">
+      <div class="push-status-row">
+        <span class="push-status-dot" id="pushStatusDot"></span>
+        <span class="push-status-text" id="pushStatusText">Verificando status…</span>
+      </div>
+      <p class="push-status-detail" id="pushStatusDetail"></p>
+
+      <div class="push-actions">
+        <button id="pushActivateBtn" class="primary-btn" style="display:none;">ativar notificações</button>
+        <button id="pushTestBtn" class="ghost-btn" style="display:none;">enviar notificação de teste</button>
+        <button id="pushDeactivateBtn" class="ghost-btn" style="display:none;">desativar notificações</button>
+      </div>
+      <div id="pushMsg" class="form-msg"></div>
+    </div>
+
+    <details class="advanced" open>
+      <summary>Instruções por aparelho</summary>
+      <p>
+        <strong>Android (Chrome):</strong> basta tocar em "ativar notificações" acima e aceitar
+        a permissão do navegador. Funciona direto, sem precisar instalar nada — mas se quiser
+        um ícone de app na tela, use o menu do Chrome → "Adicionar à tela inicial".
+      </p>
+      <p>
+        <strong>iPhone (Safari):</strong> o iOS só permite notificações para sites instalados
+        como app. Toque no ícone de Compartilhar → <strong>"Adicionar à Tela de Início"</strong>.
+        Depois feche o Safari e abra o app pelo ícone que apareceu na tela (não pelo Safari).
+        Só então o botão de ativar vai funcionar.
+      </p>
     </details>
 
   </section>
