@@ -5,9 +5,7 @@ function urlsFor(req, slug) {
   const proto = req.headers["x-forwarded-proto"] || "https";
   const base = `${proto}://${req.headers.host}`;
   return {
-    gerada: `${base}/api/webhook/${slug}?tipo=gerada`,
-    aprovada: `${base}/api/webhook/${slug}?tipo=aprovada`,
-    reembolso: `${base}/api/webhook/${slug}?tipo=reembolso`,
+    unica: `${base}/api/webhook/${slug}`,
   };
 }
 

@@ -211,16 +211,9 @@ async function loadGateways() {
         </div>
       </div>
       <div class="url-field">
-        <label>Venda gerada <span class="tag tag-gerada">pendente</span></label>
-        <div class="url-row"><code>${g.urls.gerada}</code><button class="copy-btn" data-value="${g.urls.gerada}">copiar</button></div>
-      </div>
-      <div class="url-field">
-        <label>Venda aprovada <span class="tag tag-aprovada">pago</span></label>
-        <div class="url-row"><code>${g.urls.aprovada}</code><button class="copy-btn" data-value="${g.urls.aprovada}">copiar</button></div>
-      </div>
-      <div class="url-field">
-        <label>Venda reembolsada <span class="tag tag-reembolso">reembolsado</span></label>
-        <div class="url-row"><code>${g.urls.reembolso}</code><button class="copy-btn" data-value="${g.urls.reembolso}">copiar</button></div>
+        <label>URL única do webhook <span class="tag tag-unica">identifica sozinha</span></label>
+        <div class="url-row"><code>${g.urls.unica}</code><button class="copy-btn" data-value="${g.urls.unica}">copiar</button></div>
+        <p class="url-field-hint">Cadastre essa única URL na sua plataforma. O sistema identifica sozinho se é venda gerada, aprovada ou reembolsada, olhando o conteúdo de cada notificação.</p>
       </div>
       <div class="gateway-test-row">
         <button class="test-btn test-gerada" data-slug="${g.slug}" data-tipo="gerada">testar venda gerada</button>
@@ -237,7 +230,7 @@ async function loadGateways() {
   });
   gatewayList.querySelectorAll(".remove-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      if (!confirm("Remover este gateway? As URLs dele deixarão de funcionar.")) return;
+      if (!confirm("Remover este gateway? A URL dele deixará de funcionar.")) return;
       try {
         await apiFetch(`/api/gateways/${btn.dataset.slug}`, { method: "DELETE" });
         loadGateways();
@@ -249,21 +242,28 @@ async function loadGateways() {
   });
 }
 
-async function testGateway(slug, tipo, btn) {
+// status "genérico" que representa cada tipo, usado só pra testar se a
+// detecção automática (sem ?tipo= forçado) classifica certo
+const STATUS_DE_TESTE = { gerada: "pending", aprovada: "paid", reembolso: "refunded" };
+
+async function testGateway(slug, tipoEsperado, btn) {
   const resultEl = gatewayList.querySelector(`.test-result[data-result-for="${slug}"]`);
   btn.disabled = true;
   const originalText = btn.textContent;
   btn.textContent = "enviando...";
   try {
-    const res = await fetch(`/api/webhook/${slug}?tipo=${tipo}`, {
+    const res = await fetch(`/api/webhook/${slug}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ valor: 97, cliente: "Teste do painel", produto: "Produto de teste" }),
+      body: JSON.stringify({ status: STATUS_DE_TESTE[tipoEsperado], valor: 97, cliente: "Teste do painel", produto: "Produto de teste" }),
     });
     const data = await res.json();
-    if (res.ok && data.ok) {
-      resultEl.textContent = "✓ enviado — confira na aba Dashboard";
+    if (res.ok && data.ok && data.classificado_como === tipoEsperado) {
+      resultEl.textContent = "✓ enviado e identificado certo — confira na aba Dashboard";
       resultEl.className = "test-result success";
+    } else if (res.ok && data.ok) {
+      resultEl.textContent = `⚠ chegou, mas foi identificado como "${data.classificado_como}" em vez de "${tipoEsperado}"`;
+      resultEl.className = "test-result error";
     } else {
       resultEl.textContent = `✗ erro: ${data.erro || res.status}`;
       resultEl.className = "test-result error";
@@ -275,7 +275,7 @@ async function testGateway(slug, tipo, btn) {
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
-    setTimeout(() => { resultEl.textContent = ""; resultEl.className = "test-result"; }, 6000);
+    setTimeout(() => { resultEl.textContent = ""; resultEl.className = "test-result"; }, 7000);
   }
 }
 

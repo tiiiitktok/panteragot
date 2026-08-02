@@ -123,10 +123,10 @@
     <div class="webhooks-intro">
       <h2>Gateways cadastrados</h2>
       <p>
-        Cada gateway (Hotmart, Kiwify, Stripe, Mercado Pago, ou qualquer outro) recebe suas
-        próprias três URLs — uma para venda gerada, outra para venda aprovada e outra para
-        venda reembolsada. Assim você
-        sempre sabe de qual plataforma cada notificação veio.
+        Cada gateway (Hotmart, Kiwify, Stripe, Mercado Pago, ou qualquer outro) recebe uma
+        única URL de webhook. O sistema identifica sozinho, pelo conteúdo de cada notificação,
+        se é uma venda gerada, aprovada ou reembolsada — não precisa configurar nada além disso
+        na sua plataforma.
       </p>
     </div>
 
@@ -141,12 +141,11 @@
     </div>
 
     <details class="advanced generic-webhook">
-      <summary>URL genérica — detecção automática (sem gateway específico)</summary>
+      <summary>URL genérica — sem vincular a nenhum gateway</summary>
       <p>
-        Use se sua plataforma não permite cadastrar duas URLs. O servidor tenta identificar
-        se é venda gerada ou aprovada lendo campos comuns do payload (<code>status</code>,
-        <code>event</code>, <code>situacao</code>…). Prefira sempre cadastrar um gateway acima
-        quando possível — é mais confiável.
+        Use essa URL só se quiser receber webhooks sem identificar de qual plataforma vieram
+        (aparecem como "Genérico" no painel). Também usa detecção automática. Prefira sempre
+        cadastrar um gateway acima — assim toda notificação mostra a origem certa.
       </p>
       <div class="url-row">
         <code id="urlAuto">carregando…</code>
