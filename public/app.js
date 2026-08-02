@@ -512,8 +512,76 @@ async function testPush() {
 pushToggleBtn.addEventListener("click", togglePush);
 pushTestBtn.addEventListener("click", testPush);
 
+/* ============================= SONS DE VENDA ============================= */
+const somGerado = new Audio("/sounds/gerado.mp3");
+const somAprovado = new Audio("/sounds/aprovada.mp3");
+somGerado.preload = "auto";
+somAprovado.preload = "auto";
+
+const SOUND_KEY = "salesRadarSomAtivo";
+function somAtivo() {
+  return localStorage.getItem(SOUND_KEY) !== "0";
+}
+function setSomAtivo(ativo) {
+  localStorage.setItem(SOUND_KEY, ativo ? "1" : "0");
+  updateSoundToggleUI();
+}
+
+function playSound(audio) {
+  if (!somAtivo()) return;
+  try {
+    audio.currentTime = 0;
+    audio.play().catch(() => {}); // navegador pode bloquear antes da 1ª interação do usuário — ignora silenciosamente
+  } catch (_) {}
+}
+
+// "Destrava" o áudio no primeiro toque/clique, exigido pelos navegadores antes de tocar som programaticamente
+function unlockAudioOnce() {
+  [somGerado, somAprovado].forEach((a) => {
+    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+  });
+  document.removeEventListener("click", unlockAudioOnce);
+  document.removeEventListener("touchend", unlockAudioOnce);
+}
+document.addEventListener("click", unlockAudioOnce, { once: true });
+document.addEventListener("touchend", unlockAudioOnce, { once: true });
+
+// Inicializa "agora" pra não disparar som de vendas antigas ao carregar a página
+let ultimaChecagemSom = new Date().toISOString();
+
+async function checkNewSalesForSound() {
+  let list;
+  try {
+    list = await apiFetch("/api/notifications"); // sem filtro de período — sempre olha os mais recentes de verdade
+  } catch (_) {
+    return;
+  }
+  if (!list || list.length === 0) return;
+
+  // list vem do mais recente pro mais antigo; pega só os que são novos desde a última checagem
+  const novas = list.filter((n) => n.recebidoEm > ultimaChecagemSom).reverse(); // ordem cronológica
+  for (const n of novas) {
+    if (n.tipo === "gerada") playSound(somGerado);
+    else if (n.tipo === "aprovada") playSound(somAprovado);
+  }
+  ultimaChecagemSom = list[0].recebidoEm;
+}
+
+function updateSoundToggleUI() {
+  const btn = document.getElementById("soundToggleBtn");
+  if (!btn) return;
+  btn.textContent = somAtivo() ? "🔊 som ativado" : "🔇 som desativado";
+  btn.classList.toggle("sound-off", !somAtivo());
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "soundToggleBtn") setSomAtivo(!somAtivo());
+});
+
 /* ============================= INIT ============================= */
 applyRange(computeRange("hoje"));
 loadGateways();
 startPolling();
 refreshPushStatus();
+updateSoundToggleUI();
+setInterval(checkNewSalesForSound, POLL_MS);
