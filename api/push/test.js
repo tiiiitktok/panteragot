@@ -1,11 +1,12 @@
-const { sendPushToAll } = require("../../lib/push");
+const { sendPushToUser } = require("../../lib/push");
+const { requireAuth } = require("../../lib/auth");
 
-module.exports = async (req, res) => {
+module.exports = requireAuth(async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, erro: "método não permitido" });
   }
   try {
-    const result = await sendPushToAll({
+    const result = await sendPushToUser(req.user.id, {
       title: "Sales Radar",
       body: "Notificações ativadas! Você vai receber um aviso aqui a cada venda gerada ou aprovada.",
       tag: "sales-radar-teste",
@@ -16,4 +17,4 @@ module.exports = async (req, res) => {
     console.error(err);
     res.status(500).json({ ok: false, erro: "não foi possível enviar a notificação de teste" });
   }
-};
+});

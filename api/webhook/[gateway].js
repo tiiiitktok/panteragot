@@ -1,7 +1,7 @@
 const crypto = require("crypto");
-const { getNotifications, setNotifications, getGateways } = require("../../lib/store");
+const { getNotificationsForUser, setNotificationsForUser, getGatewaysForUser, getGatewayIndex } = require("../../lib/store");
 const { detectTipo, detectValor, detectExtra, checkSecret } = require("../../lib/detect");
-const { sendPushToAll, buildPushPayload } = require("../../lib/push");
+const { sendPushToUser, buildPushPayload } = require("../../lib/push");
 
 module.exports = async (req, res) => {
   const slug = req.query.gateway;
@@ -14,12 +14,18 @@ module.exports = async (req, res) => {
   }
   if (!checkSecret(req, res)) return;
 
+  const index = await getGatewayIndex();
+  const userId = index[slug];
+  if (!userId) {
+    return res.status(404).json({ ok: false, erro: "gateway não encontrado" });
+  }
+
   const body = req.body || {};
   const tipo = detectTipo(body, req.query.tipo);
   const valor = detectValor(body);
   const { cliente, produto } = detectExtra(body);
 
-  const gateways = await getGateways();
+  const gateways = await getGatewaysForUser(userId);
   const g = gateways.find((x) => x.slug === slug);
 
   const notif = {
@@ -34,13 +40,13 @@ module.exports = async (req, res) => {
     payload: body,
   };
 
-  const list = await getNotifications();
+  const list = await getNotificationsForUser(userId);
   list.push(notif);
   if (list.length > 2000) list.splice(0, list.length - 2000);
-  await setNotifications(list);
+  await setNotificationsForUser(userId, list);
 
   try {
-    await sendPushToAll(buildPushPayload(notif));
+    await sendPushToUser(userId, buildPushPayload(notif));
   } catch (err) {
     console.error("Falha ao enviar push:", err);
   }

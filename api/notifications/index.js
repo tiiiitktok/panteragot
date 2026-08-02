@@ -1,18 +1,21 @@
-const { getNotifications, setNotifications } = require("../../lib/store");
+const { getNotificationsForUser, setNotificationsForUser } = require("../../lib/store");
 const { filterByRange } = require("../../lib/detect");
+const { requireAuth } = require("../../lib/auth");
 
-module.exports = async (req, res) => {
+module.exports = requireAuth(async (req, res) => {
+  const userId = req.user.id;
+
   if (req.method === "GET") {
     const { inicio, fim } = req.query;
-    const list = await getNotifications();
+    const list = await getNotificationsForUser(userId);
     const filtered = filterByRange(list, inicio, fim);
     return res.status(200).json(filtered.slice(-500).reverse());
   }
 
   if (req.method === "DELETE") {
-    await setNotifications([]);
+    await setNotificationsForUser(userId, []);
     return res.status(200).json({ ok: true });
   }
 
   res.status(405).json({ ok: false, erro: "método não permitido" });
-};
+});

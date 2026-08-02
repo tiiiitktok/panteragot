@@ -29,9 +29,14 @@ async function apiFetch(url, options) {
   if (!res.ok) {
     let msg = `Erro ${res.status}`;
     try { const j = await res.json(); if (j.erro) msg = j.erro; } catch (_) {}
-    offlineBanner.classList.add("show");
-    connDot.classList.remove("live");
-    connText.textContent = "erro ao falar com o servidor";
+    if (res.status === 401) {
+      // sessão expirou ou foi encerrada em outro lugar — volta pra tela de login
+      if (typeof showAuthScreen === "function") showAuthScreen();
+    } else {
+      offlineBanner.classList.add("show");
+      connDot.classList.remove("live");
+      connText.textContent = "erro ao falar com o servidor";
+    }
     const err = new Error(msg);
     err.status = res.status;
     console.error("Erro na API", url, msg);
@@ -178,7 +183,6 @@ document.getElementById("clearBtn").addEventListener("click", async () => {
 
 /* ============================= GATEWAYS ============================= */
 const gatewayList = document.getElementById("gatewayList");
-document.getElementById("urlAuto").textContent = `${window.location.origin}/api/webhook`;
 
 function showGatewayMsg(text, type) {
   gatewayMsg.textContent = text;
@@ -325,6 +329,7 @@ async function addGateway() {
 document.querySelectorAll(".advanced .copy-btn[data-target]").forEach((btn) => {
   btn.addEventListener("click", () => copyText(document.getElementById(btn.dataset.target).textContent, btn));
 });
+
 
 /* ============================= ATUALIZAÇÃO AUTOMÁTICA ============================= */
 // A Vercel não mantém conexões abertas (sem SSE/WebSocket em funções serverless),
@@ -512,76 +517,130 @@ async function testPush() {
 pushToggleBtn.addEventListener("click", togglePush);
 pushTestBtn.addEventListener("click", testPush);
 
-/* ============================= SONS DE VENDA ============================= */
-const somGerado = new Audio("/sounds/gerado.mp3");
-const somAprovado = new Audio("/sounds/aprovada.mp3");
-somGerado.preload = "auto";
-somAprovado.preload = "auto";
+/* ============================= AUTENTICAÇÃO ============================= */
+const authScreen = document.getElementById("authScreen");
+const appShell = document.getElementById("appShell");
+const authMsg = document.getElementById("authMsg");
+const sideUserEmail = document.getElementById("sideUserEmail");
 
-const SOUND_KEY = "salesRadarSomAtivo";
-function somAtivo() {
-  return localStorage.getItem(SOUND_KEY) !== "0";
-}
-function setSomAtivo(ativo) {
-  localStorage.setItem(SOUND_KEY, ativo ? "1" : "0");
-  updateSoundToggleUI();
+let appStarted = false;
+
+function showAuthScreen() {
+  appShell.style.display = "none";
+  authScreen.style.display = "flex";
 }
 
-function playSound(audio) {
-  if (!somAtivo()) return;
-  try {
-    audio.currentTime = 0;
-    audio.play().catch(() => {}); // navegador pode bloquear antes da 1ª interação do usuário — ignora silenciosamente
-  } catch (_) {}
+function showApp(email) {
+  authScreen.style.display = "none";
+  appShell.style.display = "flex";
+  if (sideUserEmail) sideUserEmail.textContent = email || "";
+  if (!appStarted) {
+    appStarted = true;
+    startApp();
+  }
 }
 
-// "Destrava" o áudio no primeiro toque/clique, exigido pelos navegadores antes de tocar som programaticamente
-function unlockAudioOnce() {
-  [somGerado, somAprovado].forEach((a) => {
-    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+function authMsgShow(text, type) {
+  authMsg.textContent = text;
+  authMsg.className = `form-msg ${type}`;
+}
+
+document.querySelectorAll(".auth-tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".auth-tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".auth-form").forEach((f) => f.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`${btn.dataset.authtab}Form`).classList.add("active");
+    authMsg.textContent = "";
+    authMsg.className = "form-msg";
   });
-  document.removeEventListener("click", unlockAudioOnce);
-  document.removeEventListener("touchend", unlockAudioOnce);
-}
-document.addEventListener("click", unlockAudioOnce, { once: true });
-document.addEventListener("touchend", unlockAudioOnce, { once: true });
-
-// Inicializa "agora" pra não disparar som de vendas antigas ao carregar a página
-let ultimaChecagemSom = new Date().toISOString();
-
-async function checkNewSalesForSound() {
-  let list;
-  try {
-    list = await apiFetch("/api/notifications"); // sem filtro de período — sempre olha os mais recentes de verdade
-  } catch (_) {
-    return;
-  }
-  if (!list || list.length === 0) return;
-
-  // list vem do mais recente pro mais antigo; pega só os que são novos desde a última checagem
-  const novas = list.filter((n) => n.recebidoEm > ultimaChecagemSom).reverse(); // ordem cronológica
-  for (const n of novas) {
-    if (n.tipo === "gerada") playSound(somGerado);
-    else if (n.tipo === "aprovada") playSound(somAprovado);
-  }
-  ultimaChecagemSom = list[0].recebidoEm;
-}
-
-function updateSoundToggleUI() {
-  const btn = document.getElementById("soundToggleBtn");
-  if (!btn) return;
-  btn.textContent = somAtivo() ? "🔊 som ativado" : "🔇 som desativado";
-  btn.classList.toggle("sound-off", !somAtivo());
-}
-
-document.addEventListener("click", (e) => {
-  if (e.target && e.target.id === "soundToggleBtn") setSomAtivo(!somAtivo());
 });
 
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const btn = e.target.querySelector(".auth-submit");
+  btn.disabled = true;
+  btn.textContent = "entrando...";
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      authMsg.textContent = "";
+      showApp(data.email);
+    } else {
+      authMsgShow(data.erro || "Não foi possível entrar.", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    authMsgShow("Não foi possível falar com o servidor.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Entrar";
+  }
+});
+
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const btn = e.target.querySelector(".auth-submit");
+  btn.disabled = true;
+  btn.textContent = "criando conta...";
+  try {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      authMsg.textContent = "";
+      showApp(data.email);
+    } else {
+      authMsgShow(data.erro || "Não foi possível criar a conta.", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    authMsgShow("Não foi possível falar com o servidor.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Criar conta";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch (_) {}
+  window.location.reload();
+});
+
+async function checkAuth() {
+  try {
+    const res = await fetch("/api/auth/me");
+    if (res.ok) {
+      const data = await res.json();
+      showApp(data.email);
+    } else {
+      showAuthScreen();
+    }
+  } catch (_) {
+    showAuthScreen();
+  }
+}
+
 /* ============================= INIT ============================= */
-applyRange(computeRange("hoje"));
-loadGateways();
-startPolling();
-refreshPushStatus();
-updateSoundToggleUI();
-setInterval(checkNewSalesForSound, POLL_MS);
+function startApp() {
+  applyRange(computeRange("hoje"));
+  loadGateways();
+  startPolling();
+  refreshPushStatus();
+}
+
+checkAuth();

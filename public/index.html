@@ -22,7 +22,34 @@
 </head>
 <body>
 
-<div class="shell">
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-name">SALES RADAR</div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" data-authtab="login">Entrar</button>
+      <button class="auth-tab-btn" data-authtab="signup">Criar conta</button>
+    </div>
+
+    <form id="loginForm" class="auth-form active">
+      <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="email" required />
+      <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" required />
+      <button type="submit" class="primary-btn auth-submit">Entrar</button>
+    </form>
+
+    <form id="signupForm" class="auth-form">
+      <input type="email" id="signupEmail" placeholder="E-mail" autocomplete="email" required />
+      <input type="password" id="signupPassword" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" minlength="6" required />
+      <button type="submit" class="primary-btn auth-submit">Criar conta</button>
+    </form>
+
+    <div id="authMsg" class="form-msg"></div>
+  </div>
+</div>
+
+<div class="shell" id="appShell" style="display:none;">
 
   <aside class="sidebar">
     <div class="brand">
@@ -43,6 +70,10 @@
         <span class="side-nav-icon">◔</span> Notificações
       </button>
     </nav>
+    <div class="side-footer">
+      <div class="side-user" id="sideUserEmail"></div>
+      <button id="logoutBtn" class="ghost-btn side-logout-btn">sair da conta</button>
+    </div>
   </aside>
 
   <div class="main">
@@ -140,19 +171,6 @@
       <div class="empty-gateways">Carregando gateways…</div>
     </div>
 
-    <details class="advanced generic-webhook">
-      <summary>URL genérica — sem vincular a nenhum gateway</summary>
-      <p>
-        Use essa URL só se quiser receber webhooks sem identificar de qual plataforma vieram
-        (aparecem como "Genérico" no painel). Também usa detecção automática. Prefira sempre
-        cadastrar um gateway acima — assim toda notificação mostra a origem certa.
-      </p>
-      <div class="url-row">
-        <code id="urlAuto">carregando…</code>
-        <button class="copy-btn" data-target="urlAuto">copiar</button>
-      </div>
-    </details>
-
   </section>
 
   <!-- ===================== NOTIFICAÇÕES ===================== -->
@@ -195,19 +213,6 @@
         Só então o botão de ativar vai funcionar.
       </p>
     </details>
-
-    <div class="webhooks-intro" style="margin-top: 28px;">
-      <h2>Som de alerta (com o site aberto)</h2>
-      <p>
-        Além da notificação do celular, o painel toca um som diferente na hora — um para
-        venda gerada, outro para venda aprovada — sempre que você está com o site aberto
-        (mesmo em segundo plano na aba). Isso funciona em qualquer aparelho, sem precisar
-        instalar nada.
-      </p>
-    </div>
-    <div class="push-status-card">
-      <button id="soundToggleBtn" class="ghost-btn">🔊 som ativado</button>
-    </div>
 
   </section>
 

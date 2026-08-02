@@ -1,20 +1,33 @@
 # Sales Radar — versão Vercel
 
-Painel que recebe webhooks de vendas de qualquer plataforma (gateway) e
-mostra quantidade e valor total de vendas **geradas** e **aprovadas**,
-filtráveis por período (hoje, ontem, semana, mês, ou uma data específica).
-Tem uma aba separada de **Webhooks** para cadastrar cada gateway (Hotmart,
-Kiwify, Stripe, etc) e gerar as URLs específicas de cada um.
+Painel multiusuário que recebe webhooks de vendas de qualquer plataforma
+(gateway) e mostra quantidade e valor total de vendas **geradas**,
+**aprovadas** e **reembolsadas**, filtráveis por período. Cada pessoa cria
+sua própria conta (e-mail + senha) e tem seus próprios gateways,
+notificações e notificações push — totalmente isolado de outras contas.
 
 Esta versão foi adaptada para rodar na Vercel como funções serverless, e
 usa um banco **Postgres** (via integração Supabase) para guardar os dados.
+
+## Contas de usuário
+
+Ao acessar o site pela primeira vez, aparece uma tela de login/cadastro.
+Qualquer pessoa pode criar uma conta com e-mail e senha — não tem
+aprovação manual nem convite necessário. Cada conta só vê os próprios
+gateways e notificações; não existe um jeito de uma conta ver os dados de
+outra.
+
+A sessão fica guardada num cookie seguro por 30 dias. Não precisa
+configurar nada a mais para isso funcionar — as chaves de segurança usadas
+para assinar as sessões são geradas automaticamente na primeira vez que
+alguém acessa, do mesmo jeito que as chaves de notificação push.
 
 ## Por que precisa de um banco de dados
 
 Na Vercel, cada requisição roda numa função que liga, responde, e desliga
 — nada fica guardado na memória entre uma chamada e outra, e o disco é
-somente leitura. Por isso os dados (gateways cadastrados, notificações
-recebidas) precisam ficar em um banco externo.
+somente leitura. Por isso os dados (contas, gateways cadastrados,
+notificações recebidas) precisam ficar em um banco externo.
 
 ## Sobre a variável de conexão do banco
 
