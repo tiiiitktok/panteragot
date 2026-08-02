@@ -275,3 +275,5 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: 
   .side-user { display: none; }
   .side-logout-btn { width: auto; }
 }
+
+.auth-hint { font-size: 11px; color: var(--muted); line-height: 1.5; margin: -2px 0 2px; }

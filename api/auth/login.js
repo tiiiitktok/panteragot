@@ -22,5 +22,5 @@ module.exports = async (req, res) => {
   const token = await signToken({ uid: user.id });
   setSessionCookie(req, res, token);
 
-  res.status(200).json({ ok: true, email: user.email });
+  res.status(200).json({ ok: true, email: user.email, nome: user.nome });
 };

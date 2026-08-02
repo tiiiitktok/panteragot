@@ -530,10 +530,10 @@ function showAuthScreen() {
   authScreen.style.display = "flex";
 }
 
-function showApp(email) {
+function showApp(nome, email) {
   authScreen.style.display = "none";
   appShell.style.display = "flex";
-  if (sideUserEmail) sideUserEmail.textContent = email || "";
+  if (sideUserEmail) sideUserEmail.textContent = nome || email || "";
   if (!appStarted) {
     appStarted = true;
     startApp();
@@ -572,7 +572,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (res.ok && data.ok) {
       authMsg.textContent = "";
-      showApp(data.email);
+      showApp(data.nome, data.email);
     } else {
       authMsgShow(data.erro || "Não foi possível entrar.", "error");
     }
@@ -587,6 +587,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
 document.getElementById("signupForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const nome = document.getElementById("signupNome").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
   const btn = e.target.querySelector(".auth-submit");
@@ -596,12 +597,12 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ nome, email, password }),
     });
     const data = await res.json();
     if (res.ok && data.ok) {
       authMsg.textContent = "";
-      showApp(data.email);
+      showApp(data.nome, data.email);
     } else {
       authMsgShow(data.erro || "Não foi possível criar a conta.", "error");
     }
@@ -626,7 +627,7 @@ async function checkAuth() {
     const res = await fetch("/api/auth/me");
     if (res.ok) {
       const data = await res.json();
-      showApp(data.email);
+      showApp(data.nome, data.email);
     } else {
       showAuthScreen();
     }

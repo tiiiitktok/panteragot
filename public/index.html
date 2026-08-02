@@ -40,8 +40,10 @@
     </form>
 
     <form id="signupForm" class="auth-form">
+      <input type="text" id="signupNome" placeholder="Seu nome" autocomplete="name" required />
       <input type="email" id="signupEmail" placeholder="E-mail" autocomplete="email" required />
       <input type="password" id="signupPassword" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" minlength="6" required />
+      <p class="auth-hint">Seu nome vai identificar as URLs de webhook das suas contas — precisa ser único, ninguém mais pode usar o mesmo.</p>
       <button type="submit" class="primary-btn auth-submit">Criar conta</button>
     </form>
 

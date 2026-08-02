@@ -20,15 +20,20 @@ module.exports = requireAuth(async (req, res) => {
     const nome = ((req.body && req.body.nome) || "").trim();
     if (!nome) return res.status(400).json({ ok: false, erro: "informe um nome para o gateway" });
 
-    // slug precisa ser único entre TODOS os usuários (é a chave pública na URL do webhook)
-    const index = await getGatewayIndex();
-    const existingSlugs = Object.keys(index).map((s) => ({ slug: s }));
-    const slug = slugify(nome, existingSlugs);
+    // O slug já começa com o nome (único) da conta, então nunca colide com o
+    // gateway de outra pessoa — só precisa desambiguar dentro dos gateways
+    // deste mesmo usuário, caso ele repita o nome de um gateway já existente.
+    const gateways = await getGatewaysForUser(userId);
+    const parteDoGateway = slugify(nome, []);
+    const base = `${req.user.nomeSlug}-${parteDoGateway}`;
+    let slug = base;
+    let i = 2;
+    while (gateways.some((g) => g.slug === slug)) slug = `${base}-${i++}`;
 
+    const index = await getGatewayIndex();
     index[slug] = userId;
     await setGatewayIndex(index);
 
-    const gateways = await getGatewaysForUser(userId);
     const gw = { slug, nome, criadoEm: new Date().toISOString() };
     gateways.push(gw);
     await setGatewaysForUser(userId, gateways);
