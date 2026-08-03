@@ -524,19 +524,43 @@ const appShell = document.getElementById("appShell");
 const authMsg = document.getElementById("authMsg");
 const sideUserEmail = document.getElementById("sideUserEmail");
 const adminNavBtn = document.getElementById("adminNavBtn");
+const sideAvatarImg = document.getElementById("sideAvatarImg");
+const sideAvatarPlaceholder = document.getElementById("sideAvatarPlaceholder");
 
 let appStarted = false;
+let currentUser = { nome: "", email: "", avatar: null };
 
 function showAuthScreen() {
   appShell.style.display = "none";
   authScreen.style.display = "flex";
 }
 
-function showApp(nome, email, isAdmin) {
+function renderAvatarEls(dataUrl) {
+  [
+    [sideAvatarImg, sideAvatarPlaceholder],
+    [document.getElementById("profileAvatarImg"), document.getElementById("profileAvatarPlaceholder")],
+  ].forEach(([img, placeholder]) => {
+    if (!img || !placeholder) return;
+    if (dataUrl) {
+      img.src = dataUrl;
+      img.style.display = "block";
+      placeholder.style.display = "none";
+    } else {
+      img.style.display = "none";
+      placeholder.style.display = "block";
+    }
+  });
+}
+
+function showApp(nome, email, isAdmin, avatar) {
   authScreen.style.display = "none";
   appShell.style.display = "flex";
+  currentUser = { nome: nome || "", email: email || "", avatar: avatar || null };
   if (sideUserEmail) sideUserEmail.textContent = nome || email || "";
   if (adminNavBtn) adminNavBtn.style.display = isAdmin ? "flex" : "none";
+  renderAvatarEls(currentUser.avatar);
+  const nomeInput = document.getElementById("profileNomeInput");
+  if (nomeInput) nomeInput.value = currentUser.nome;
   if (!appStarted) {
     appStarted = true;
     startApp();
@@ -575,7 +599,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (res.ok && data.ok) {
       authMsg.textContent = "";
-      showApp(data.nome, data.email, data.isAdmin);
+      showApp(data.nome, data.email, data.isAdmin, data.avatar);
     } else {
       authMsgShow(data.erro || "Não foi possível entrar.", "error");
     }
@@ -605,7 +629,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (res.ok && data.ok) {
       authMsg.textContent = "";
-      showApp(data.nome, data.email, data.isAdmin);
+      showApp(data.nome, data.email, data.isAdmin, data.avatar);
     } else {
       authMsgShow(data.erro || "Não foi possível criar a conta.", "error");
     }
@@ -630,7 +654,7 @@ async function checkAuth() {
     const res = await fetch("/api/auth/me");
     if (res.ok) {
       const data = await res.json();
-      showApp(data.nome, data.email, data.isAdmin);
+      showApp(data.nome, data.email, data.isAdmin, data.avatar);
     } else {
       showAuthScreen();
     }
@@ -690,6 +714,151 @@ async function loadAdmin() {
     });
   });
 }
+
+/* ============================= PERFIL ============================= */
+function resizeImageToDataUrl(file, maxSize = 240, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("não foi possível ler o arquivo"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("arquivo não é uma imagem válida"));
+      img.onload = () => {
+        // corta em quadrado (cover) e reduz pro tamanho máximo, pra manter o
+        // arquivo pequeno o suficiente pra guardar no banco sem problema
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, maxSize, maxSize);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function avatarMsgShow(text, type) {
+  const el = document.getElementById("avatarMsg");
+  el.textContent = text;
+  el.className = `form-msg ${type}`;
+  if (type === "success") setTimeout(() => { el.textContent = ""; el.className = "form-msg"; }, 4000);
+}
+
+document.getElementById("avatarInput").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await resizeImageToDataUrl(file);
+    await apiFetch("/api/account/avatar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataUrl }),
+    });
+    currentUser.avatar = dataUrl;
+    renderAvatarEls(dataUrl);
+    avatarMsgShow("Foto atualizada.", "success");
+  } catch (err) {
+    console.error(err);
+    avatarMsgShow(err.message || "Não foi possível enviar a foto.", "error");
+  } finally {
+    e.target.value = "";
+  }
+});
+
+document.getElementById("removeAvatarBtn").addEventListener("click", async () => {
+  try {
+    await apiFetch("/api/account/avatar", { method: "DELETE" });
+    currentUser.avatar = null;
+    renderAvatarEls(null);
+    avatarMsgShow("Foto removida.", "success");
+  } catch (err) {
+    avatarMsgShow(err.message || "Não foi possível remover a foto.", "error");
+  }
+});
+
+function profileNomeMsgShow(text, type) {
+  const el = document.getElementById("profileNomeMsg");
+  el.textContent = text;
+  el.className = `form-msg ${type}`;
+  if (type === "success") setTimeout(() => { el.textContent = ""; el.className = "form-msg"; }, 4000);
+}
+
+document.getElementById("profileNomeBtn").addEventListener("click", async () => {
+  const input = document.getElementById("profileNomeInput");
+  const novoNome = input.value.trim();
+  if (!novoNome) {
+    profileNomeMsgShow("Digite um nome.", "error");
+    return;
+  }
+  const btn = document.getElementById("profileNomeBtn");
+  btn.disabled = true;
+  btn.textContent = "salvando...";
+  try {
+    await apiFetch("/api/account/nome", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome: novoNome }),
+    });
+    currentUser.nome = novoNome;
+    if (sideUserEmail) sideUserEmail.textContent = novoNome;
+    profileNomeMsgShow("Nome atualizado.", "success");
+  } catch (err) {
+    profileNomeMsgShow(err.message || "Não foi possível salvar.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "salvar";
+  }
+});
+
+function deleteMsgShow(text, type) {
+  const el = document.getElementById("deleteMsg");
+  el.textContent = text;
+  el.className = `form-msg ${type}`;
+}
+
+document.getElementById("startDeleteBtn").addEventListener("click", () => {
+  document.getElementById("deleteAccountForm").style.display = "block";
+  document.getElementById("startDeleteBtn").style.display = "none";
+  document.getElementById("deletePasswordInput").focus();
+});
+
+document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+  const password = document.getElementById("deletePasswordInput").value;
+  if (!password) {
+    deleteMsgShow("Digite sua senha pra confirmar.", "error");
+    return;
+  }
+  if (!confirm("Tem certeza? Sua conta e todos os seus dados serão apagados PERMANENTEMENTE.")) return;
+
+  const btn = document.getElementById("confirmDeleteBtn");
+  btn.disabled = true;
+  btn.textContent = "excluindo...";
+  try {
+    const res = await fetch("/api/account/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      window.location.reload();
+    } else {
+      deleteMsgShow(data.erro || "Não foi possível excluir.", "error");
+      btn.disabled = false;
+      btn.textContent = "excluir minha conta";
+    }
+  } catch (err) {
+    console.error(err);
+    deleteMsgShow("Não foi possível falar com o servidor.", "error");
+    btn.disabled = false;
+    btn.textContent = "excluir minha conta";
+  }
+});
 
 /* ============================= INIT ============================= */
 function startApp() {

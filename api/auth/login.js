@@ -1,4 +1,4 @@
-const { getUsers } = require("../../lib/store");
+const { getUsers, getAvatarForUser } = require("../../lib/store");
 const { verifyPassword, signToken, setSessionCookie, isAdminEmail } = require("../../lib/auth");
 
 module.exports = async (req, res) => {
@@ -22,5 +22,6 @@ module.exports = async (req, res) => {
   const token = await signToken({ uid: user.id });
   setSessionCookie(req, res, token);
 
-  res.status(200).json({ ok: true, email: user.email, nome: user.nome, isAdmin: isAdminEmail(user.email) });
+  const avatar = await getAvatarForUser(user.id);
+  res.status(200).json({ ok: true, email: user.email, nome: user.nome, isAdmin: isAdminEmail(user.email), avatar });
 };

@@ -71,12 +71,19 @@
       <button class="side-nav-btn" data-tab="notificacoes">
         <span class="side-nav-icon">◔</span> Notificações
       </button>
+      <button class="side-nav-btn" data-tab="perfil">
+        <span class="side-nav-icon">☺</span> Perfil
+      </button>
       <button class="side-nav-btn" data-tab="admin" id="adminNavBtn" style="display:none;">
         <span class="side-nav-icon">⚙</span> Admin
       </button>
     </nav>
     <div class="side-footer">
-      <div class="side-user" id="sideUserEmail"></div>
+      <div class="side-user-row">
+        <img id="sideAvatarImg" class="side-avatar" style="display:none;" alt="" />
+        <div id="sideAvatarPlaceholder" class="side-avatar side-avatar-placeholder"></div>
+        <div class="side-user" id="sideUserEmail"></div>
+      </div>
       <button id="logoutBtn" class="ghost-btn side-logout-btn">sair da conta</button>
     </div>
   </aside>
@@ -218,6 +225,58 @@
         Só então o botão de ativar vai funcionar.
       </p>
     </details>
+
+  </section>
+
+  <!-- ===================== PERFIL ===================== -->
+  <section id="tab-perfil" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Seu perfil</h2>
+      <p>Gerencie sua foto, seu nome de exibição e sua conta.</p>
+    </div>
+
+    <div class="push-status-card">
+      <div class="profile-avatar-row">
+        <img id="profileAvatarImg" class="profile-avatar" style="display:none;" alt="" />
+        <div id="profileAvatarPlaceholder" class="profile-avatar profile-avatar-placeholder"></div>
+        <div class="profile-avatar-actions">
+          <label for="avatarInput" class="ghost-btn profile-avatar-btn">trocar foto</label>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
+          <button id="removeAvatarBtn" class="ghost-btn profile-avatar-btn">remover foto</button>
+        </div>
+      </div>
+      <div id="avatarMsg" class="form-msg"></div>
+    </div>
+
+    <div class="push-status-card">
+      <label class="profile-label">Nome de exibição</label>
+      <div class="add-gateway" style="margin-top: 8px;">
+        <input type="text" id="profileNomeInput" placeholder="Seu nome" />
+        <button id="profileNomeBtn" class="primary-btn">salvar</button>
+      </div>
+      <p class="url-field-hint">
+        Trocar o nome não altera as URLs de webhook que você já configurou nas suas
+        plataformas de venda — elas continuam funcionando normalmente.
+      </p>
+      <div id="profileNomeMsg" class="form-msg"></div>
+    </div>
+
+    <div class="push-status-card profile-danger-card">
+      <label class="profile-label profile-danger-label">Excluir conta</label>
+      <p class="url-field-hint">
+        Isso apaga permanentemente sua conta, seus gateways, notificações e inscrições de
+        push. Não tem como desfazer. Suas URLs de webhook param de funcionar na hora.
+      </p>
+      <div id="deleteAccountForm" style="display:none; margin-top: 10px;">
+        <div class="add-gateway">
+          <input type="password" id="deletePasswordInput" placeholder="Digite sua senha pra confirmar" />
+          <button id="confirmDeleteBtn" class="danger-btn">excluir minha conta</button>
+        </div>
+      </div>
+      <button id="startDeleteBtn" class="danger-btn-outline" style="margin-top: 10px;">excluir minha conta</button>
+      <div id="deleteMsg" class="form-msg"></div>
+    </div>
 
   </section>
 
