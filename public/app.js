@@ -55,6 +55,7 @@ document.querySelectorAll(".side-nav-btn").forEach((btn) => {
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    if (btn.dataset.tab === "admin") loadAdmin();
   });
 });
 
@@ -522,6 +523,7 @@ const authScreen = document.getElementById("authScreen");
 const appShell = document.getElementById("appShell");
 const authMsg = document.getElementById("authMsg");
 const sideUserEmail = document.getElementById("sideUserEmail");
+const adminNavBtn = document.getElementById("adminNavBtn");
 
 let appStarted = false;
 
@@ -530,10 +532,11 @@ function showAuthScreen() {
   authScreen.style.display = "flex";
 }
 
-function showApp(nome, email) {
+function showApp(nome, email, isAdmin) {
   authScreen.style.display = "none";
   appShell.style.display = "flex";
   if (sideUserEmail) sideUserEmail.textContent = nome || email || "";
+  if (adminNavBtn) adminNavBtn.style.display = isAdmin ? "flex" : "none";
   if (!appStarted) {
     appStarted = true;
     startApp();
@@ -572,7 +575,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (res.ok && data.ok) {
       authMsg.textContent = "";
-      showApp(data.nome, data.email);
+      showApp(data.nome, data.email, data.isAdmin);
     } else {
       authMsgShow(data.erro || "Não foi possível entrar.", "error");
     }
@@ -602,7 +605,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (res.ok && data.ok) {
       authMsg.textContent = "";
-      showApp(data.nome, data.email);
+      showApp(data.nome, data.email, data.isAdmin);
     } else {
       authMsgShow(data.erro || "Não foi possível criar a conta.", "error");
     }
@@ -627,13 +630,65 @@ async function checkAuth() {
     const res = await fetch("/api/auth/me");
     if (res.ok) {
       const data = await res.json();
-      showApp(data.nome, data.email);
+      showApp(data.nome, data.email, data.isAdmin);
     } else {
       showAuthScreen();
     }
   } catch (_) {
     showAuthScreen();
   }
+}
+
+/* ============================= ADMIN ============================= */
+const adminList = document.getElementById("adminList");
+
+async function loadAdmin() {
+  let list;
+  try {
+    list = await apiFetch("/api/admin/users");
+  } catch (err) {
+    adminList.innerHTML = `<div class="empty-gateways">Não foi possível carregar as contas${err.status === 403 ? " (acesso restrito ao administrador)" : ""}.</div>`;
+    return;
+  }
+  if (list.length === 0) {
+    adminList.innerHTML = `<div class="empty-gateways">Nenhuma conta encontrada.</div>`;
+    return;
+  }
+  adminList.innerHTML = "";
+  list.forEach((u) => {
+    const card = document.createElement("div");
+    card.className = "gateway-card";
+    card.innerHTML = `
+      <div class="gateway-card-head">
+        <span class="gateway-card-name">${u.nome}<span class="admin-email">${u.email}</span></span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="gateway-card-date">desde ${new Date(u.criadoEm).toLocaleDateString("pt-BR")}</span>
+          <button class="remove-btn" data-id="${u.id}">excluir conta</button>
+        </div>
+      </div>
+      <div class="admin-stats-row">
+        <span>${u.totalGateways} gateway(s)</span>
+        <span>${u.totalNotificacoes} notificação(ões)</span>
+      </div>
+    `;
+    adminList.appendChild(card);
+  });
+
+  adminList.querySelectorAll(".remove-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Excluir esta conta e todos os dados dela (gateways, notificações, inscrições push)? Isso não pode ser desfeito.")) return;
+      btn.disabled = true;
+      btn.textContent = "excluindo...";
+      try {
+        await apiFetch(`/api/admin/users/${btn.dataset.id}`, { method: "DELETE" });
+        loadAdmin();
+      } catch (err) {
+        alert("Não foi possível excluir: " + err.message);
+        btn.disabled = false;
+        btn.textContent = "excluir conta";
+      }
+    });
+  });
 }
 
 /* ============================= INIT ============================= */

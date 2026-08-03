@@ -71,6 +71,9 @@
       <button class="side-nav-btn" data-tab="notificacoes">
         <span class="side-nav-icon">◔</span> Notificações
       </button>
+      <button class="side-nav-btn" data-tab="admin" id="adminNavBtn" style="display:none;">
+        <span class="side-nav-icon">⚙</span> Admin
+      </button>
     </nav>
     <div class="side-footer">
       <div class="side-user" id="sideUserEmail"></div>
@@ -215,6 +218,24 @@
         Só então o botão de ativar vai funcionar.
       </p>
     </details>
+
+  </section>
+
+  <!-- ===================== ADMIN ===================== -->
+  <section id="tab-admin" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Administração — todas as contas</h2>
+      <p>
+        Lista de todas as contas criadas no sistema. Não é possível ver a senha de ninguém —
+        elas ficam guardadas de um jeito que nem o administrador consegue reverter, só a
+        própria pessoa confirmando a senha atual pra trocar.
+      </p>
+    </div>
+
+    <div id="adminList" class="gateway-list">
+      <div class="empty-gateways">Carregando contas…</div>
+    </div>
 
   </section>
 

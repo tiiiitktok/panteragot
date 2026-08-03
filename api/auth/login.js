@@ -1,5 +1,5 @@
 const { getUsers } = require("../../lib/store");
-const { verifyPassword, signToken, setSessionCookie } = require("../../lib/auth");
+const { verifyPassword, signToken, setSessionCookie, isAdminEmail } = require("../../lib/auth");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -22,5 +22,5 @@ module.exports = async (req, res) => {
   const token = await signToken({ uid: user.id });
   setSessionCookie(req, res, token);
 
-  res.status(200).json({ ok: true, email: user.email, nome: user.nome });
+  res.status(200).json({ ok: true, email: user.email, nome: user.nome, isAdmin: isAdminEmail(user.email) });
 };

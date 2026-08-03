@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const { getUsers, setUsers } = require("../../lib/store");
-const { hashPassword, signToken, setSessionCookie } = require("../../lib/auth");
+const { hashPassword, signToken, setSessionCookie, isAdminEmail } = require("../../lib/auth");
 const { slugify } = require("../../lib/detect");
 
 function isValidEmail(email) {
@@ -53,5 +53,5 @@ module.exports = async (req, res) => {
   const token = await signToken({ uid: user.id });
   setSessionCookie(req, res, token);
 
-  res.status(200).json({ ok: true, email: user.email, nome: user.nome });
+  res.status(200).json({ ok: true, email: user.email, nome: user.nome, isAdmin: isAdminEmail(user.email) });
 };

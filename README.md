@@ -120,6 +120,27 @@ Também dá pra testar de novo a qualquer momento usando os botões
 notificações estiverem ativadas, elas devem aparecer no celular também,
 não só no painel.
 
+## Virar administrador (ver e excluir todas as contas)
+
+Não existe um login separado de admin — a sua própria conta normal vira
+administradora automaticamente se o e-mail dela bater com uma variável de
+ambiente que você configura.
+
+1. Na Vercel, vá em **Settings → Environment Variables**
+2. Adicione uma variável chamada `ADMIN_EMAIL` com o valor sendo o e-mail
+   que você usa (ou vai usar) pra fazer login no site
+3. Faça um **Redeploy** (Deployments → ⋯ → Redeploy)
+4. Entre no site com esse e-mail (crie a conta se ainda não tiver)
+
+Depois disso, uma aba **"Admin"** aparece na sua sidebar, só pra você — ela
+mostra todas as contas criadas (nome, e-mail, data de criação, quantos
+gateways e notificações cada uma tem) e permite excluir qualquer conta,
+o que apaga também todos os dados dela.
+
+Por segurança, não é possível ver a senha de ninguém — elas ficam
+guardadas de forma irreversível (nem eu, nem você, conseguem recuperar a
+senha original de alguém, só a própria pessoa trocando a dela).
+
 ## Segurança (recomendado)
 
 Defina uma variável de ambiente `WEBHOOK_SECRET` no painel da Vercel
