@@ -61,6 +61,7 @@ document.querySelectorAll(".side-nav-btn").forEach((btn) => {
 
 /* ============================= PERÍODO ============================= */
 let currentRange = null;
+let currentGatewayFilter = "";
 
 function startOfDay(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
 function endOfDay(d) { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; }
@@ -107,17 +108,38 @@ document.getElementById("datePick").addEventListener("change", (e) => {
   applyRange({ inicio: startOfDay(chosen), fim: endOfDay(chosen), label });
 });
 
+document.getElementById("gatewayFilterSelect").addEventListener("change", (e) => {
+  currentGatewayFilter = e.target.value;
+  loadDashboard();
+});
+
+function populateGatewayFilter(gateways) {
+  const select = document.getElementById("gatewayFilterSelect");
+  const valorAtual = select.value;
+  select.innerHTML = `<option value="">Todos os gateways</option>`;
+  gateways.forEach((g) => {
+    const opt = document.createElement("option");
+    opt.value = g.slug;
+    opt.textContent = g.nome;
+    select.appendChild(opt);
+  });
+  // mantém a seleção atual se o gateway escolhido ainda existir na lista
+  if (gateways.some((g) => g.slug === valorAtual)) select.value = valorAtual;
+  else { select.value = ""; currentGatewayFilter = ""; }
+}
+
 /* ============================= DASHBOARD DATA ============================= */
 async function loadDashboard() {
   if (!currentRange) return;
   const inicio = currentRange.inicio.toISOString();
   const fim = currentRange.fim.toISOString();
+  const gatewayParam = currentGatewayFilter ? `&gateway=${encodeURIComponent(currentGatewayFilter)}` : "";
 
   let stats, list;
   try {
     [stats, list] = await Promise.all([
-      apiFetch(`/api/stats?inicio=${inicio}&fim=${fim}`),
-      apiFetch(`/api/notifications?inicio=${inicio}&fim=${fim}`),
+      apiFetch(`/api/stats?inicio=${inicio}&fim=${fim}${gatewayParam}`),
+      apiFetch(`/api/notifications?inicio=${inicio}&fim=${fim}${gatewayParam}`),
     ]);
   } catch (_) {
     return;
@@ -127,7 +149,7 @@ async function loadDashboard() {
 
   feed.innerHTML = "";
   if (list.length === 0) {
-    feed.innerHTML = `<div class="empty-state">Nenhum sinal neste período.</div>`;
+    feed.innerHTML = `<div class="empty-state">Nenhum sinal neste período${currentGatewayFilter ? " para este gateway" : ""}.</div>`;
   } else {
     list.forEach((n) => renderCard(n));
   }
@@ -199,6 +221,7 @@ async function loadGateways() {
     gatewayList.innerHTML = `<div class="empty-gateways">Não foi possível carregar os gateways. Veja o aviso no topo da página.</div>`;
     return;
   }
+  populateGatewayFilter(list);
   if (list.length === 0) {
     gatewayList.innerHTML = `<div class="empty-gateways">Nenhum gateway cadastrado ainda. Adicione um acima (ex: Hotmart, Kiwify, Stripe) para gerar as URLs de webhook dele.</div>`;
     return;

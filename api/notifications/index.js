@@ -6,9 +6,10 @@ module.exports = requireAuth(async (req, res) => {
   const userId = req.user.id;
 
   if (req.method === "GET") {
-    const { inicio, fim } = req.query;
+    const { inicio, fim, gateway } = req.query;
     const list = await getNotificationsForUser(userId);
-    const filtered = filterByRange(list, inicio, fim);
+    let filtered = filterByRange(list, inicio, fim);
+    if (gateway) filtered = filtered.filter((n) => n.gateway === gateway);
     return res.status(200).json(filtered.slice(-500).reverse());
   }
 

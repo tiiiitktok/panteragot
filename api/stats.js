@@ -7,9 +7,10 @@ module.exports = requireAuth(async (req, res) => {
     return res.status(405).json({ ok: false, erro: "método não permitido" });
   }
 
-  const { inicio, fim } = req.query;
+  const { inicio, fim, gateway } = req.query;
   const list = await getNotificationsForUser(req.user.id);
-  const filtered = filterByRange(list, inicio, fim);
+  let filtered = filterByRange(list, inicio, fim);
+  if (gateway) filtered = filtered.filter((n) => n.gateway === gateway);
 
   const stats = {
     gerada: { qtd: 0, valor: 0 },
