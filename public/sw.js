@@ -20,7 +20,7 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body || "",
-    icon: "/icons/icon-192.png",
+    icon: data.icon || "/icons/icon-192.png",
     badge: "/icons/icon-192.png",
     tag: data.tag || "sales-radar",
     renotify: true,
