@@ -1,4 +1,4 @@
-# Sales Radar — versão Vercel
+# Noxion — versão Vercel
 
 Painel multiusuário que recebe webhooks de vendas de qualquer plataforma
 (gateway) e mostra quantidade e valor total de vendas **geradas**,

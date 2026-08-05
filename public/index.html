@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>roipucher</title>
+<title>Noxion</title>
 
 <!-- PWA / instalação na tela de início -->
 <link rel="manifest" href="/manifest.json" />
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="/icons/icon-180.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="roipucher" />
+<meta name="apple-mobile-web-app-title" content="Noxion" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,9 +23,19 @@
 <body>
 
 <div id="authScreen" class="auth-screen">
+  <div class="auth-radar-bg" aria-hidden="true">
+    <span class="auth-ring r1"></span>
+    <span class="auth-ring r2"></span>
+    <span class="auth-ring r3"></span>
+    <span class="auth-sweep"></span>
+  </div>
   <div class="auth-card">
     <div class="auth-brand">
-      <div class="brand-name">SALES RADAR</div>
+      <span class="brand-radar brand-radar-lg">
+        <span class="brand-radar-sweep"></span>
+        <span class="brand-dot live"></span>
+      </span>
+      <div class="brand-name">NOXION</div>
     </div>
 
     <div class="auth-tabs">
@@ -55,27 +65,35 @@
 
   <aside class="sidebar">
     <div class="brand">
-      <span class="brand-dot" id="connDot"></span>
+      <span class="brand-radar" id="brandRadar">
+        <span class="brand-radar-sweep"></span>
+        <span class="brand-dot" id="connDot"></span>
+      </span>
       <div>
-        <div class="brand-name">SALES RADAR</div>
+        <div class="brand-name">NOXION</div>
         <div class="brand-sub" id="connText">carregando…</div>
       </div>
     </div>
     <nav class="side-nav">
       <button class="side-nav-btn active" data-tab="dashboard">
-        <span class="side-nav-icon">◧</span> Dashboard
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 12.5L7.5 8l3 3L17 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16.5h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Dashboard
       </button>
       <button class="side-nav-btn" data-tab="webhooks">
-        <span class="side-nav-icon">⇄</span> Webhooks
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M7.5 5.5H5a2.5 2.5 0 000 5h1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12.5 14.5H15a2.5 2.5 0 000-5h-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7 10h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Webhooks
       </button>
       <button class="side-nav-btn" data-tab="notificacoes">
-        <span class="side-nav-icon">◔</span> Notificações
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3.5c-2.2 0-4 1.8-4 4v2.3c0 .5-.2 1-.5 1.4L4.5 12.5h11l-1-1.3c-.3-.4-.5-.9-.5-1.4V7.5c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.3 15a1.8 1.8 0 003.4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Notificações
       </button>
       <button class="side-nav-btn" data-tab="perfil">
-        <span class="side-nav-icon">☺</span> Perfil
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 16c.8-2.8 3.2-4.5 6-4.5s5.2 1.7 6 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Perfil
       </button>
       <button class="side-nav-btn" data-tab="admin" id="adminNavBtn" style="display:none;">
-        <span class="side-nav-icon">⚙</span> Admin
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3l5.5 2v4c0 4-2.3 6.7-5.5 8-3.2-1.3-5.5-4-5.5-8V5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Admin
       </button>
     </nav>
     <div class="side-footer">
