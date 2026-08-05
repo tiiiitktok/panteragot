@@ -9,7 +9,7 @@ module.exports = requireAuth(async (req, res) => {
     const result = await sendPushToUser(req.user.id, {
       title: "Noxion",
       body: "Notificações ativadas! Você vai receber um aviso aqui a cada venda gerada ou aprovada.",
-      tag: "sales-radar-teste",
+      tag: "noxion-teste",
       url: "/",
     });
     res.status(200).json({ ok: true, ...result });

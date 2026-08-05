@@ -1,5 +1,5 @@
 {
-  "name": "sales-radar",
+  "name": "noxion",
   "version": "3.0.0",
   "description": "Painel multiusuario de notificacoes de vendas via webhook (Postgres/Supabase), com login por conta, notificacoes push no celular e deteccao automatica de gateway",
   "dependencies": {

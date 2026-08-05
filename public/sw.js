@@ -1,4 +1,4 @@
-// Service Worker do Sales Radar — roda em segundo plano no celular (depois
+// Service Worker do Noxion — roda em segundo plano no celular (depois
 // que o site é adicionado à tela de início) e é o responsável por exibir
 // a notificação do sistema quando o servidor envia um push.
 
@@ -11,7 +11,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "Sales Radar", body: "Nova notificação de venda." };
+  let data = { title: "Noxion", body: "Nova notificação de venda." };
   try {
     if (event.data) data = event.data.json();
   } catch (_) {
@@ -22,13 +22,13 @@ self.addEventListener("push", (event) => {
     body: data.body || "",
     icon: data.icon || "/icons/icon-192.png",
     badge: "/icons/icon-192.png",
-    tag: data.tag || "sales-radar",
+    tag: data.tag || "noxion",
     renotify: true,
     data: { url: data.url || "/" },
     vibrate: [80, 40, 80],
   };
 
-  event.waitUntil(self.registration.showNotification(data.title || "Sales Radar", options));
+  event.waitUntil(self.registration.showNotification(data.title || "Noxion", options));
 });
 
 // Ao tocar na notificação, abre (ou foca) o painel
