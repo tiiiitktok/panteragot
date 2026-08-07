@@ -23,41 +23,50 @@
 <body>
 
 <div id="authScreen" class="auth-screen">
-  <div class="auth-radar-bg" aria-hidden="true">
-    <span class="auth-ring r1"></span>
-    <span class="auth-ring r2"></span>
-    <span class="auth-ring r3"></span>
-    <span class="auth-sweep"></span>
-  </div>
-  <div class="auth-card">
-    <div class="auth-brand">
-      <span class="brand-radar brand-radar-lg">
-        <span class="brand-radar-sweep"></span>
-        <span class="brand-dot live"></span>
-      </span>
-      <div class="brand-name">NOXION</div>
+  <div class="auth-split">
+
+    <div class="auth-brand-panel">
+      <div class="auth-radar-bg" aria-hidden="true">
+        <span class="auth-ring r1"></span>
+        <span class="auth-ring r2"></span>
+        <span class="auth-ring r3"></span>
+        <span class="auth-sweep"></span>
+      </div>
+      <div class="auth-brand-content">
+        <span class="brand-radar brand-radar-lg">
+          <span class="brand-radar-sweep"></span>
+          <span class="brand-dot live"></span>
+        </span>
+        <div class="brand-name auth-brand-name">NOXION</div>
+        <p class="auth-tagline">Acompanhe suas vendas geradas, aprovadas e reembolsadas em tempo real — direto no celular ou no computador.</p>
+      </div>
     </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab-btn active" data-authtab="login">Entrar</button>
-      <button class="auth-tab-btn" data-authtab="signup">Criar conta</button>
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" data-authtab="login">Entrar</button>
+          <button class="auth-tab-btn" data-authtab="signup">Criar conta</button>
+        </div>
+
+        <form id="loginForm" class="auth-form active">
+          <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="email" required />
+          <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" required />
+          <button type="submit" class="primary-btn auth-submit">Entrar</button>
+        </form>
+
+        <form id="signupForm" class="auth-form">
+          <input type="text" id="signupNome" placeholder="Seu nome" autocomplete="name" required />
+          <input type="email" id="signupEmail" placeholder="E-mail" autocomplete="email" required />
+          <input type="password" id="signupPassword" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" minlength="6" required />
+          <p class="auth-hint">Seu nome vai identificar as URLs de webhook das suas contas — precisa ser único, ninguém mais pode usar o mesmo.</p>
+          <button type="submit" class="primary-btn auth-submit">Criar conta</button>
+        </form>
+
+        <div id="authMsg" class="form-msg"></div>
+      </div>
     </div>
 
-    <form id="loginForm" class="auth-form active">
-      <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="email" required />
-      <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" required />
-      <button type="submit" class="primary-btn auth-submit">Entrar</button>
-    </form>
-
-    <form id="signupForm" class="auth-form">
-      <input type="text" id="signupNome" placeholder="Seu nome" autocomplete="name" required />
-      <input type="email" id="signupEmail" placeholder="E-mail" autocomplete="email" required />
-      <input type="password" id="signupPassword" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" minlength="6" required />
-      <p class="auth-hint">Seu nome vai identificar as URLs de webhook das suas contas — precisa ser único, ninguém mais pode usar o mesmo.</p>
-      <button type="submit" class="primary-btn auth-submit">Criar conta</button>
-    </form>
-
-    <div id="authMsg" class="form-msg"></div>
   </div>
 </div>
 
@@ -139,7 +148,20 @@
 
     <div class="period-label" id="periodLabel">Mostrando: hoje</div>
 
-    <div class="stats-grid">
+    <div class="dash-hero">
+      <div class="dash-hero-main">
+        <span class="dash-hero-label">Total aprovado no período</span>
+        <div class="dash-hero-value" id="valorAprovada">R$ 0,00</div>
+        <div class="dash-hero-foot"><span class="stat-qtd" id="qtdAprovada">0</span> venda(s) aprovada(s)</div>
+      </div>
+      <div class="dash-hero-side">
+        <span class="dash-mini-label">Taxa de conversão</span>
+        <div class="dash-mini-value" id="taxaConversao">—</div>
+        <div class="dash-mini-foot" id="detalheConversao">venda aprovada sobre venda gerada</div>
+      </div>
+    </div>
+
+    <div class="stats-grid stats-grid-secondary">
       <div class="stat-card gerada">
         <div class="stat-top">
           <span class="stat-badge">VENDA GERADA</span>
@@ -147,21 +169,6 @@
         </div>
         <div class="stat-value" id="valorGerada">R$ 0,00</div>
         <div class="stat-foot">total pendente de pagamento no período</div>
-      </div>
-      <div class="stat-card aprovada">
-        <div class="stat-top">
-          <span class="stat-badge">VENDA APROVADA</span>
-          <span class="stat-qtd" id="qtdAprovada">0</span>
-        </div>
-        <div class="stat-value" id="valorAprovada">R$ 0,00</div>
-        <div class="stat-foot">total efetivamente pago no período</div>
-      </div>
-      <div class="stat-card conversao">
-        <div class="stat-top">
-          <span class="stat-badge">TAXA DE CONVERSÃO</span>
-        </div>
-        <div class="stat-value" id="taxaConversao">—</div>
-        <div class="stat-foot" id="detalheConversao">venda aprovada sobre venda gerada</div>
       </div>
       <div class="stat-card reembolso">
         <div class="stat-top">
