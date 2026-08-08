@@ -1,9 +1,0 @@
-{
-  "name": "noxion",
-  "version": "3.0.0",
-  "description": "Painel multiusuario de notificacoes de vendas via webhook (Postgres/Supabase), com login por conta, notificacoes push no celular e deteccao automatica de gateway",
-  "dependencies": {
-    "pg": "^8.22.0",
-    "web-push": "^3.6.7"
-  }
-}
