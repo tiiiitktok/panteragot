@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Noxion</title>
+
+<!-- PWA / instalação na tela de início -->
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0b0e11" />
+<link rel="icon" href="/icons/icon-192.png" />
+
+<!-- iOS: precisa dessas tags específicas pra funcionar como app instalado -->
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Noxion" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="authScreen" class="auth-screen">
+  <div class="auth-split">
+
+    <div class="auth-brand-panel">
+      <div class="auth-radar-bg" aria-hidden="true">
+        <span class="auth-ring r1"></span>
+        <span class="auth-ring r2"></span>
+        <span class="auth-ring r3"></span>
+        <span class="auth-sweep"></span>
+      </div>
+      <div class="auth-brand-content">
+        <span class="brand-radar brand-radar-lg">
+          <span class="brand-radar-sweep"></span>
+          <span class="brand-dot live"></span>
+        </span>
+        <div class="brand-name auth-brand-name">NOXION</div>
+        <p class="auth-tagline">Acompanhe suas vendas geradas, aprovadas e reembolsadas em tempo real — direto no celular ou no computador.</p>
+      </div>
+    </div>
+
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" data-authtab="login">Entrar</button>
+          <button class="auth-tab-btn" data-authtab="signup">Criar conta</button>
+        </div>
+
+        <form id="loginForm" class="auth-form active">
+          <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="email" required />
+          <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" required />
+          <button type="submit" class="primary-btn auth-submit">Entrar</button>
+        </form>
+
+        <form id="signupForm" class="auth-form">
+          <input type="text" id="signupNome" placeholder="Seu nome" autocomplete="name" required />
+          <input type="email" id="signupEmail" placeholder="E-mail" autocomplete="email" required />
+          <input type="password" id="signupPassword" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" minlength="6" required />
+          <p class="auth-hint">Seu nome vai identificar as URLs de webhook das suas contas — precisa ser único, ninguém mais pode usar o mesmo.</p>
+          <button type="submit" class="primary-btn auth-submit">Criar conta</button>
+        </form>
+
+        <div id="authMsg" class="form-msg"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="shell" id="appShell" style="display:none;">
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-brand">
+      <span class="brand-radar brand-radar-static">
+        <span class="brand-radar-sweep"></span>
+        <span class="brand-dot live"></span>
+      </span>
+      <div class="brand-name">NOXION</div>
+    </div>
+    <nav class="side-nav">
+      <button class="side-nav-btn active" data-tab="dashboard">
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 12.5L7.5 8l3 3L17 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16.5h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Dashboard
+      </button>
+      <button class="side-nav-btn" data-tab="webhooks">
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M7.5 5.5H5a2.5 2.5 0 000 5h1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12.5 14.5H15a2.5 2.5 0 000-5h-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7 10h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Webhooks
+      </button>
+      <button class="side-nav-btn" data-tab="notificacoes">
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3.5c-2.2 0-4 1.8-4 4v2.3c0 .5-.2 1-.5 1.4L4.5 12.5h11l-1-1.3c-.3-.4-.5-.9-.5-1.4V7.5c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.3 15a1.8 1.8 0 003.4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Notificações
+      </button>
+      <button class="side-nav-btn" data-tab="perfil">
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 16c.8-2.8 3.2-4.5 6-4.5s5.2 1.7 6 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Perfil
+      </button>
+      <button class="side-nav-btn" data-tab="admin" id="adminNavBtn" style="display:none;">
+        <svg class="side-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3l5.5 2v4c0 4-2.3 6.7-5.5 8-3.2-1.3-5.5-4-5.5-8V5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Admin
+      </button>
+    </nav>
+    <div class="side-footer">
+      <div class="side-user-row">
+        <img id="sideAvatarImg" class="side-avatar" style="display:none;" alt="" />
+        <div id="sideAvatarPlaceholder" class="side-avatar side-avatar-placeholder"></div>
+        <div class="side-user" id="sideUserEmail"></div>
+      </div>
+      <button id="logoutBtn" class="ghost-btn side-logout-btn">sair da conta</button>
+    </div>
+  </aside>
+
+  <div class="main">
+
+  <header class="topbar">
+    <button id="drawerToggle" class="drawer-toggle" aria-label="Abrir menu">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <div class="topbar-title-group">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-sub"><span class="brand-dot" id="connDot"></span><span id="connText">carregando…</span></div>
+    </div>
+    <div class="topbar-actions">
+      <button id="hideValuesBtn" class="icon-btn" title="Ocultar valores">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.3" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+      <button id="refreshBtn" class="icon-btn" title="Atualizar">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M16.5 10a6.5 6.5 0 10-1.8 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16.5 5.5V10h-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+  <div id="offlineBanner" class="offline-banner">
+    Não consegui falar com o servidor. Confira se ele está rodando (<code>npm start</code>)
+    e se você está acessando pelo endereço certo (ex: http://localhost:3000), não abrindo o
+    arquivo index.html direto no navegador.
+  </div>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <section id="tab-dashboard" class="tab-panel active">
+
+    <div class="period-bar">
+      <div class="period-quick">
+        <button class="period-btn active" data-period="hoje">Hoje</button>
+        <button class="period-btn" data-period="ontem">Ontem</button>
+        <button class="period-btn" data-period="semana">Semana <span class="period-hint">últimos 7 dias</span></button>
+        <button class="period-btn" data-period="mes">Mês <span class="period-hint">mês atual</span></button>
+      </div>
+      <div class="period-custom">
+        <label for="datePick">Escolher um dia</label>
+        <input type="date" id="datePick" />
+      </div>
+    </div>
+
+    <div class="gateway-filter-row">
+      <label for="gatewayFilterSelect">Gateway</label>
+      <select id="gatewayFilterSelect">
+        <option value="">Todos os gateways</option>
+      </select>
+    </div>
+
+    <div class="period-label" id="periodLabel">Mostrando: hoje</div>
+
+    <div class="dash-hero">
+      <div class="dash-hero-main">
+        <span class="dash-hero-label">Total aprovado no período</span>
+        <div class="dash-hero-value" id="valorAprovada">R$ 0,00</div>
+        <div class="dash-hero-foot"><span class="stat-qtd" id="qtdAprovada">0</span> venda(s) aprovada(s)</div>
+      </div>
+      <div class="dash-hero-side">
+        <span class="dash-mini-label">Taxa de conversão</span>
+        <div class="dash-mini-value" id="taxaConversao">—</div>
+        <div class="dash-mini-foot" id="detalheConversao">venda aprovada sobre venda gerada</div>
+      </div>
+    </div>
+
+    <div class="stats-grid stats-grid-secondary">
+      <div class="stat-card gerada">
+        <div class="stat-top">
+          <span class="stat-badge">VENDA GERADA</span>
+          <span class="stat-qtd" id="qtdGerada">0</span>
+        </div>
+        <div class="stat-value" id="valorGerada">R$ 0,00</div>
+        <div class="stat-foot">total pendente de pagamento no período</div>
+      </div>
+      <div class="stat-card reembolso">
+        <div class="stat-top">
+          <span class="stat-badge">REEMBOLSO</span>
+          <span class="stat-qtd" id="qtdReembolso">0</span>
+        </div>
+        <div class="stat-value" id="valorReembolso">R$ 0,00</div>
+        <div class="stat-foot">devolvido ao cliente no período</div>
+      </div>
+    </div>
+
+    <div class="feed-panel">
+      <div class="feed-head">
+        <h2>Sinais do período</h2>
+        <button id="clearBtn" class="ghost-btn">limpar histórico</button>
+      </div>
+      <div class="feed" id="feed">
+        <div class="empty-state">Nenhum sinal neste período.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== WEBHOOKS ===================== -->
+  <section id="tab-webhooks" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Gateways cadastrados</h2>
+      <p>
+        Cada gateway (Hotmart, Kiwify, Stripe, Mercado Pago, ou qualquer outro) recebe uma
+        única URL de webhook. O sistema identifica sozinho, pelo conteúdo de cada notificação,
+        se é uma venda gerada, aprovada ou reembolsada — não precisa configurar nada além disso
+        na sua plataforma.
+      </p>
+    </div>
+
+    <div class="add-gateway">
+      <input type="text" id="gatewayNameInput" placeholder="Nome do gateway, ex: Hotmart, Kiwify, Stripe…" />
+      <button id="addGatewayBtn" class="primary-btn">adicionar gateway</button>
+    </div>
+    <div id="gatewayMsg" class="form-msg"></div>
+
+    <div id="gatewayList" class="gateway-list">
+      <div class="empty-gateways">Carregando gateways…</div>
+    </div>
+
+  </section>
+
+  <!-- ===================== NOTIFICAÇÕES ===================== -->
+  <section id="tab-notificacoes" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Notificações no celular</h2>
+      <p>
+        Receba um aviso no seu celular a cada venda gerada ou aprovada, mesmo com o site
+        fechado. Funciona no Android direto pelo navegador, e no iPhone depois de adicionar
+        o site à tela de início.
+      </p>
+    </div>
+
+    <div class="push-status-card">
+      <div class="push-status-row">
+        <span class="push-status-dot" id="pushStatusDot"></span>
+        <span class="push-status-text" id="pushStatusText">Verificando status…</span>
+      </div>
+      <p class="push-status-detail" id="pushStatusDetail"></p>
+
+      <div class="push-actions">
+        <button id="pushToggleBtn" class="primary-btn">ativar notificações</button>
+        <button id="pushTestBtn" class="ghost-btn" style="display:none;">enviar notificação de teste</button>
+      </div>
+      <div id="pushMsg" class="form-msg"></div>
+    </div>
+
+    <details class="advanced" open>
+      <summary>Instruções por aparelho</summary>
+      <p>
+        <strong>Android (Chrome):</strong> basta tocar em "ativar notificações" acima e aceitar
+        a permissão do navegador. Funciona direto, sem precisar instalar nada — mas se quiser
+        um ícone de app na tela, use o menu do Chrome → "Adicionar à tela inicial".
+      </p>
+      <p>
+        <strong>iPhone (Safari):</strong> o iOS só permite notificações para sites instalados
+        como app. Toque no ícone de Compartilhar → <strong>"Adicionar à Tela de Início"</strong>.
+        Depois feche o Safari e abra o app pelo ícone que apareceu na tela (não pelo Safari).
+        Só então o botão de ativar vai funcionar.
+      </p>
+    </details>
+
+  </section>
+
+  <!-- ===================== PERFIL ===================== -->
+  <section id="tab-perfil" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Seu perfil</h2>
+      <p>Gerencie sua foto, seu nome de exibição e sua conta.</p>
+    </div>
+
+    <div class="push-status-card">
+      <div class="profile-avatar-row">
+        <img id="profileAvatarImg" class="profile-avatar" style="display:none;" alt="" />
+        <div id="profileAvatarPlaceholder" class="profile-avatar profile-avatar-placeholder"></div>
+        <div class="profile-avatar-actions">
+          <label for="avatarInput" class="ghost-btn profile-avatar-btn">trocar foto</label>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
+          <button id="removeAvatarBtn" class="ghost-btn profile-avatar-btn">remover foto</button>
+        </div>
+      </div>
+      <div id="avatarMsg" class="form-msg"></div>
+    </div>
+
+    <div class="push-status-card">
+      <label class="profile-label">Nome de exibição</label>
+      <div class="add-gateway" style="margin-top: 8px;">
+        <input type="text" id="profileNomeInput" placeholder="Seu nome" />
+        <button id="profileNomeBtn" class="primary-btn">salvar</button>
+      </div>
+      <p class="url-field-hint">
+        Trocar o nome não altera as URLs de webhook que você já configurou nas suas
+        plataformas de venda — elas continuam funcionando normalmente.
+      </p>
+      <div id="profileNomeMsg" class="form-msg"></div>
+    </div>
+
+    <div class="push-status-card profile-danger-card">
+      <label class="profile-label profile-danger-label">Excluir conta</label>
+      <p class="url-field-hint">
+        Isso apaga permanentemente sua conta, seus gateways, notificações e inscrições de
+        push. Não tem como desfazer. Suas URLs de webhook param de funcionar na hora.
+      </p>
+      <div id="deleteAccountForm" style="display:none; margin-top: 10px;">
+        <div class="add-gateway">
+          <input type="password" id="deletePasswordInput" placeholder="Digite sua senha pra confirmar" />
+          <button id="confirmDeleteBtn" class="danger-btn">excluir minha conta</button>
+        </div>
+      </div>
+      <button id="startDeleteBtn" class="danger-btn-outline" style="margin-top: 10px;">excluir minha conta</button>
+      <div id="deleteMsg" class="form-msg"></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== ADMIN ===================== -->
+  <section id="tab-admin" class="tab-panel">
+
+    <div class="webhooks-intro">
+      <h2>Administração — todas as contas</h2>
+      <p>
+        Lista de todas as contas criadas no sistema. Não é possível ver a senha de ninguém —
+        elas ficam guardadas de um jeito que nem o administrador consegue reverter, só a
+        própria pessoa confirmando a senha atual pra trocar.
+      </p>
+    </div>
+
+    <div id="adminList" class="gateway-list">
+      <div class="empty-gateways">Carregando contas…</div>
+    </div>
+
+  </section>
+
+  </div>
+
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
