@@ -49,50 +49,13 @@ async function apiFetch(url, options) {
 }
 
 /* ============================= ABAS ============================= */
-const TITULOS_ABA = { dashboard: "Dashboard", webhooks: "Webhooks", notificacoes: "Notificações", perfil: "Perfil", admin: "Admin" };
-const topbarTitle = document.getElementById("topbarTitle");
-
 document.querySelectorAll(".side-nav-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".side-nav-btn").forEach((b) => b.classList.remove("active"));
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-    if (topbarTitle) topbarTitle.textContent = TITULOS_ABA[btn.dataset.tab] || "Noxion";
     if (btn.dataset.tab === "admin") loadAdmin();
-    closeDrawer();
-  });
-});
-
-/* ============================= GAVETA DE NAVEGAÇÃO ============================= */
-const drawer = document.getElementById("drawer");
-const drawerBackdrop = document.getElementById("drawerBackdrop");
-const drawerToggle = document.getElementById("drawerToggle");
-
-function openDrawer() {
-  drawer.classList.add("open");
-  drawerBackdrop.classList.add("show");
-}
-function closeDrawer() {
-  drawer.classList.remove("open");
-  drawerBackdrop.classList.remove("show");
-}
-drawerToggle.addEventListener("click", () => {
-  drawer.classList.contains("open") ? closeDrawer() : openDrawer();
-});
-drawerBackdrop.addEventListener("click", closeDrawer);
-
-/* ============================= AÇÕES DO CABEÇALHO ============================= */
-document.getElementById("hideValuesBtn").addEventListener("click", (e) => {
-  document.body.classList.toggle("values-hidden");
-  e.currentTarget.classList.toggle("icon-btn-active");
-});
-
-document.getElementById("refreshBtn").addEventListener("click", (e) => {
-  const btn = e.currentTarget;
-  btn.classList.add("spinning");
-  Promise.all([loadDashboard(), loadGateways()]).finally(() => {
-    setTimeout(() => btn.classList.remove("spinning"), 400);
   });
 });
 
