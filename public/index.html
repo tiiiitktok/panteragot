@@ -72,16 +72,15 @@
 
 <div class="shell" id="appShell" style="display:none;">
 
-  <aside class="sidebar">
-    <div class="brand">
-      <span class="brand-radar" id="brandRadar">
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-brand">
+      <span class="brand-radar brand-radar-static">
         <span class="brand-radar-sweep"></span>
-        <span class="brand-dot" id="connDot"></span>
+        <span class="brand-dot live"></span>
       </span>
-      <div>
-        <div class="brand-name">NOXION</div>
-        <div class="brand-sub" id="connText">carregando…</div>
-      </div>
+      <div class="brand-name">NOXION</div>
     </div>
     <nav class="side-nav">
       <button class="side-nav-btn active" data-tab="dashboard">
@@ -116,6 +115,26 @@
   </aside>
 
   <div class="main">
+
+  <header class="topbar">
+    <button id="drawerToggle" class="drawer-toggle" aria-label="Abrir menu">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <div class="topbar-title-group">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-sub"><span class="brand-dot" id="connDot"></span><span id="connText">carregando…</span></div>
+    </div>
+    <div class="topbar-actions">
+      <button id="hideValuesBtn" class="icon-btn" title="Ocultar valores">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.3" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+      <button id="refreshBtn" class="icon-btn" title="Atualizar">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M16.5 10a6.5 6.5 0 10-1.8 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16.5 5.5V10h-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="page-content">
 
   <div id="offlineBanner" class="offline-banner">
     Não consegui falar com o servidor. Confira se ele está rodando (<code>npm start</code>)
@@ -329,6 +348,8 @@
     </div>
 
   </section>
+
+  </div>
 
   </div>
 
